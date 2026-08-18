@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="基于23张页面截图与MetaSight官方资料的证据分级产品拆解报告">
+  <title>MetaSight 产品拆解报告</title>
+  <style>
+    :root {
+      --bg:#09111f; --surface:#101b2d; --surface-2:#17243a; --surface-3:#1d2d47;
+      --text:#edf3fb; --muted:#a9b8ca; --border:#2d405d; --primary:#69a7ff;
+      --confirmed:#52d6a3; --inferred:#f2c467; --recommended:#a990ff; --unknown:#ff8b8b;
+      --shadow:0 20px 54px rgba(0,0,0,.26); --radius:18px; --header:68px;
+      --max:1480px;
+    }
+    [data-theme="light"] {
+      --bg:#eef3f9; --surface:#ffffff; --surface-2:#f5f8fc; --surface-3:#e9f0f8;
+      --text:#13243a; --muted:#52657a; --border:#cdd9e7; --primary:#175db6;
+      --confirmed:#087f5b; --inferred:#9a6200; --recommended:#6840c7; --unknown:#b42318;
+      --shadow:0 18px 45px rgba(36,57,82,.12);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth;scroll-padding-top:calc(var(--header) + 20px)}
+    body{margin:0;background:radial-gradient(circle at 8% 0%,rgba(105,167,255,.12),transparent 30%),var(--bg);color:var(--text);font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;font-size:16px;line-height:1.65}
+    a{color:var(--primary);text-underline-offset:3px}
+    a:hover{text-decoration-thickness:2px}
+    :focus-visible{outline:3px solid var(--primary);outline-offset:3px;border-radius:6px}
+    .skip{position:fixed;left:16px;top:-80px;z-index:200;background:var(--text);color:var(--bg);padding:12px 18px;border-radius:10px}
+    .skip:focus{top:12px}
+    header{position:sticky;top:0;z-index:100;height:var(--header);background:color-mix(in srgb,var(--bg) 84%,transparent);backdrop-filter:blur(18px);border-bottom:1px solid var(--border)}
+    .header-inner{max-width:var(--max);height:100%;margin:auto;padding:0 24px;display:flex;align-items:center;gap:18px}
+    .brand{font-weight:800;letter-spacing:.02em;white-space:nowrap}.brand small{display:block;color:var(--muted);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase}
+    nav{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-left:auto}
+    nav a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:10px;white-space:nowrap;font-size:14px}
+    nav a:hover{background:var(--surface-2);color:var(--text)}
+    button{font:inherit;color:inherit;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;min-height:44px;padding:8px 14px;cursor:pointer}
+    button:hover{background:var(--surface-3)}
+    main{max-width:var(--max);margin:auto;padding:44px 24px 90px}
+    .hero{display:grid;grid-template-columns:1.45fr .55fr;gap:22px;align-items:stretch;margin-bottom:30px}
+    .hero-main,.hero-side,.panel{background:linear-gradient(145deg,var(--surface),var(--surface-2));border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .hero-main{padding:42px}.hero-side{padding:28px;display:flex;flex-direction:column;justify-content:space-between}
+    .eyebrow{color:var(--primary);font-weight:750;letter-spacing:.12em;text-transform:uppercase;font-size:12px}
+    h1{font-size:clamp(34px,5vw,70px);line-height:1.03;margin:18px 0 20px;letter-spacing:-.04em}
+    h2{font-size:clamp(25px,3vw,38px);line-height:1.2;margin:0 0 20px;letter-spacing:-.02em}
+    h3{font-size:20px;line-height:1.35;margin:0 0 12px}
+    p{margin:0 0 14px}.lead{font-size:19px;max-width:74ch;color:var(--muted)}
+    .hero-meta{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:28px}
+    .metric{padding:14px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border)}
+    .metric strong{display:block;font-size:24px}.metric span{color:var(--muted);font-size:13px}
+    .status-list{display:grid;gap:10px}.status-row{display:flex;align-items:flex-start;gap:10px;color:var(--muted)}
+    .dot{width:10px;height:10px;border-radius:50%;margin-top:8px;flex:0 0 auto}.dot.c{background:var(--confirmed)}.dot.i{background:var(--inferred)}.dot.r{background:var(--recommended)}.dot.u{background:var(--unknown)}
+    section{margin-top:26px}.panel{padding:30px}
+    .section-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-end;margin-bottom:22px}.section-head p{color:var(--muted);max-width:78ch}
+    .badge{display:inline-flex;align-items:center;gap:7px;border:1px solid currentColor;border-radius:999px;padding:4px 9px;font-size:12px;font-weight:750;white-space:nowrap}
+    .confirmed{color:var(--confirmed)}.inferred{color:var(--inferred)}.recommended{color:var(--recommended)}.unknown{color:var(--unknown)}
+    .callout{padding:17px 18px;border-left:4px solid var(--primary);background:var(--surface-2);border-radius:0 12px 12px 0}.callout.warn{border-color:var(--unknown)}
+    .grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.grid-4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    .card{background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:18px}.card p,.card li{color:var(--muted)}
+    ul{margin:8px 0 0;padding-left:21px}li+li{margin-top:5px}
+    .table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:14px}
+    table{width:100%;min-width:820px;border-collapse:collapse;background:var(--surface-2)}
+    th,td{text-align:left;vertical-align:top;padding:13px 14px;border-bottom:1px solid var(--border)}
+    th{position:sticky;top:0;background:var(--surface-3);font-size:13px;letter-spacing:.03em;color:var(--text)}
+    td{font-size:14px;color:var(--muted)}tr:last-child td{border-bottom:0}
+    .lane{display:grid;grid-template-columns:126px repeat(5,minmax(210px,1fr));gap:12px;overflow-x:auto;padding-bottom:10px}
+    .lane-label{position:sticky;left:0;z-index:2;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:800;background:var(--surface-3);border:1px solid var(--border);border-radius:12px;min-height:108px}
+    .node{position:relative;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:15px;min-height:108px}
+    .node:not(:last-child)::after{content:"";position:absolute;right:-13px;top:50%;width:12px;border-top:2px solid var(--primary)}
+    .node strong{display:block;margin-bottom:6px}.node small{color:var(--muted)}
+    .decision{border-style:dashed;border-color:var(--inferred)}
+    .journey-note{display:grid;grid-template-columns:repeat(5,minmax(170px,1fr));gap:10px;overflow-x:auto;margin-top:14px}.emotion{padding:13px;background:var(--surface-2);border:1px solid var(--border);border-radius:12px}.emotion b{display:block}.emotion span{color:var(--muted);font-size:14px}
+    .pipeline{display:flex;align-items:stretch;gap:10px;overflow-x:auto;padding:4px 0 12px}.pipe{min-width:195px;flex:1;background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:16px;position:relative}.pipe:not(:last-child)::after{content:"调用 / 读取";position:absolute;right:-70px;top:45%;z-index:2;color:var(--primary);font-size:10px;background:var(--bg);padding:2px 5px}.pipe h3{font-size:16px}.pipe p{font-size:13px;color:var(--muted)}
+    .architecture{display:grid;gap:10px}.layer{display:grid;grid-template-columns:170px 1fr;gap:14px;align-items:stretch}.layer-title{display:flex;align-items:center;font-weight:800;padding:16px;border-radius:12px;background:var(--surface-3);border:1px solid var(--border)}.components{display:flex;gap:9px;flex-wrap:wrap;padding:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:12px}.component{padding:10px 12px;border-radius:10px;background:var(--surface);border:1px solid var(--border);font-size:14px}.component.inf{border-style:dashed;border-color:var(--inferred)}.component.rec{border-style:dotted;border-width:2px;border-color:var(--recommended)}
+    .legend{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:13px;margin-top:14px}.line{display:inline-block;width:38px;vertical-align:middle;margin-right:7px;border-top:2px solid var(--confirmed)}.line.dash{border-top-style:dashed;border-color:var(--inferred)}.line.dotline{border-top-style:dotted;border-color:var(--recommended)}
+    .risk{display:grid;grid-template-columns:52px 1fr auto;gap:14px;align-items:start;padding:15px 0;border-bottom:1px solid var(--border)}.risk:last-child{border:0}.priority{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:var(--surface-3);font-weight:900}.risk p{color:var(--muted);margin:4px 0 0}
+    details{border:1px solid var(--border);border-radius:12px;background:var(--surface-2);padding:0 16px}details+details{margin-top:10px}summary{cursor:pointer;min-height:50px;display:flex;align-items:center;font-weight:750}details[open] summary{border-bottom:1px solid var(--border)}details .detail-body{padding:16px 0}
+    pre{overflow-x:auto;background:#07101c;color:#cfe3ff;padding:18px;border-radius:12px;border:1px solid #263b58;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace}
+    .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.filters button[aria-pressed="true"]{background:var(--primary);color:#06101f;border-color:var(--primary);font-weight:800}
+    .source-list{display:grid;gap:10px}.source{display:grid;grid-template-columns:80px 1fr auto;gap:12px;align-items:center;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2)}
+    footer{max-width:var(--max);margin:auto;padding:0 24px 42px;color:var(--muted);font-size:13px}
+    @media(max-width:980px){.hero,.grid-3,.grid-4{grid-template-columns:1fr 1fr}.layer{grid-template-columns:1fr}.layer-title{padding:10px 14px}.header-inner{padding:0 14px}nav{display:none}.hero-main{padding:30px}.panel{padding:22px}}
+    @media(max-width:680px){:root{--header:58px}.hero,.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}.hero-main,.hero-side,.panel{padding:20px}.hero-meta{grid-template-columns:1fr 1fr}main{padding:24px 14px 70px}.section-head{display:block}.source{grid-template-columns:1fr}.lane{grid-template-columns:90px repeat(5,220px)}.pipeline .pipe{min-width:220px}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important;animation:none!important}}
+    @media print{header,.filters,.theme-button{display:none}body{background:white;color:#111}.panel,.hero-main,.hero-side{box-shadow:none;break-inside:avoid}main{max-width:none;padding:0}.table-wrap{overflow:visible}a{color:#111}}
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">跳到报告正文</a>
+  <header>
+    <div class="header-inner">
+      <div class="brand">MetaSight <small>Product Evidence Report</small></div>
+      <nav aria-label="报告章节">
+        <a href="#scope">证据</a><a href="#journey">旅程</a><a href="#agents">能力契约</a><a href="#context">上下文</a><a href="#architecture">架构</a><a href="#risks">风险</a><a href="#trace">追溯</a>
+      </nav>
+      <button class="theme-button" id="themeToggle" type="button" aria-label="切换报告明暗主题">切换主题</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="hero">
+      <div class="hero-main">
+        <div class="eyebrow">Evidence-graded reverse analysis · 2026-08-18</div>
+        <h1>MetaSight<br>产品拆解报告</h1>
+        <p class="lead">MetaSight 把出生档案与用户当下问题组织成一条“结构化命盘检索 → 时间流检索 → AI 解释 → 可分享报告”的体验链，并通过解读次数、档案额度、星云图和真人服务分层变现。</p>
+        <div class="hero-meta">
+          <div class="metric"><strong>23</strong><span>张页面截图，S21–S43</span></div>
+          <div class="metric"><strong>6</strong><span>项 MetaSight 官方来源</span></div>
+          <div class="metric"><strong>2</strong><span>条可复核端到端主线</span></div>
+          <div class="metric"><strong>0</strong><span>个页面具名 Agent</span></div>
+        </div>
+      </div>
+      <aside class="hero-side" aria-label="结论分类图例">
+        <div>
+          <h2>先看结论边界</h2>
+          <div class="status-list">
+            <div class="status-row"><span class="dot c"></span><span><b>已确认</b>：截图、官方页面或官方技术文章直接支持。</span></div>
+            <div class="status-row"><span class="dot i"></span><span><b>合理推断</b>：多条行为证据共同支持，但后台实现不可见。</span></div>
+            <div class="status-row"><span class="dot r"></span><span><b>建议设计</b>：为了可靠性、可解释性和治理而补充。</span></div>
+            <div class="status-row"><span class="dot u"></span><span><b>未知</b>：没有足够证据，绝不默认存在。</span></div>
+          </div>
+        </div>
+        <div class="callout warn"><b>重要限制</b><br>“思考了片刻”只证明页面展示了过程摘要；“星云图已生成”只证明生成状态文案与付费墙出现，不证明用户已看到完整星云图。</div>
+      </aside>
+    </div>
+
+    <section id="scope" class="panel">
+      <div class="section-head"><div><div class="eyebrow">01 · Scope & evidence</div><h2>查看范围与证据缺口</h2><p>截图从官网落地页、聊天首页、设置与订阅、命理档案、八字生成确认、星云图付费墙，一直到年度运势报告。截图文件名提供初始顺序，最终顺序由页面状态和操作承接共同校验。</p></div><span class="badge confirmed">已确认范围</span></div>
+      <div class="grid-3">
+        <article class="card"><h3>页面截图</h3><p>S21–S43，共 23 张。主要页面路径可见为首页、chat、settings、billing/plans、bazi、star-map、star-map/bazi、chat/{id}。</p></article>
+        <article class="card"><h3>官方资料</h3><p>官网、隐私政策、服务条款、创始人故事、命理方法文章、数据库迁移工程文章。</p></article>
+        <article class="card"><h3>只读边界</h3><p>未发送消息、未点击购买、未重新生成、未删除档案；联网只使用 metasight.cloud 官方域名。</p></article>
+      </div>
+      <div class="callout" style="margin-top:16px"><b>无法确认：</b>未看到注册/登录完整流程、支付完成、订阅取消、生成失败、次数耗尽、分享落地页、删除记录、真正的星云图内容、并发/中断/重试、模型名称、提示词、API、任务队列、当前部署平台或监控系统。</div>
+      <div class="table-wrap" style="margin-top:18px">
+        <table>
+          <thead><tr><th>证据 ID</th><th>页面 / 截图</th><th>可见事实</th><th>证据强度</th></tr></thead>
+          <tbody>
+            <tr><td>E-001</td><td><a href="#" title="原始截图未随仓库公开">S21 官网</a></td><td>“观象入元，见心知命”“获取我的命盘分析”，支持输入问题。</td><td><span class="badge confirmed">页面事实</span></td></tr>
+            <tr><td>E-002</td><td><a href="#" title="原始截图未随仓库公开">S22 聊天首页</a></td><td>四种入口：随缘、看运、倾听、问事；随缘显示推荐问题。</td><td><span class="badge confirmed">页面事实</span></td></tr>
+            <tr><td>E-003</td><td><a href="#" title="原始截图未随仓库公开">S23 看运</a> / <a href="#" title="原始截图未随仓库公开">S24 倾听</a> / <a href="#" title="原始截图未随仓库公开">S25 问事</a></td><td>不同模式改变说明与问题模板；倾听写明“不消耗解读次数”。</td><td><span class="badge confirmed">页面事实</span></td></tr>
+            <tr><td>E-004</td><td><a href="#" title="原始截图未随仓库公开">S30 设置</a></td><td>个人资料、命理档案、邀请、联系、订阅、账户；语言与默认运势系统可配置。</td><td><span class="badge confirmed">页面事实</span></td></tr>
+            <tr><td>E-005</td><td><a href="#" title="原始截图未随仓库公开">S31 定价</a></td><td>免费、微光、烛照、洞见四档；次数、档案、历史、星云图、专属服务分层。</td><td><span class="badge confirmed">页面事实</span></td></tr>
+            <tr><td>E-006</td><td><a href="#" title="原始截图未随仓库公开">S32 八字档案</a></td><td>存在搜索、新增与一张“主八字”档案卡。</td><td><span class="badge confirmed">页面事实</span></td></tr>
+            <tr><td>E-007</td><td><a href="#" title="原始截图未随仓库公开">S33 体系选择</a></td><td>八字命理可“生成星云图”；西方星盘显示“敬请期待”。</td><td><span class="badge confirmed">页面事实</span></td></tr>
+            <tr><td>E-008</td><td><a href="#" title="原始截图未随仓库公开">S34 信息确认</a></td><td>STEP 02 确认八字信息，强调时辰准确性影响结果。</td><td><span class="badge confirmed">页面事实</span></td></tr>
+            <tr><td>E-009</td><td><a href="#" title="原始截图未随仓库公开">S35 生成/付费墙</a></td><td>显示“星云图已生成”，但完整内容被“解锁星云图”阻挡；可升级或邀请 2 位好友解锁。</td><td><span class="badge confirmed">页面事实 / 状态冲突风险</span></td></tr>
+            <tr><td>E-010</td><td><a href="#" title="原始截图未随仓库公开">S36 查询过程</a>–<a href="#" title="原始截图未随仓库公开">S37 时间流</a></td><td>问题“今年我的运势如何”；页面公开展示“思考了片刻”“查询命盘”“查询时间流”及卡片结果。</td><td><span class="badge confirmed">页面事实</span></td></tr>
+            <tr><td>E-011</td><td><a href="#" title="原始截图未随仓库公开">S38</a>–<a href="#" title="原始截图未随仓库公开">S43</a></td><td>输出年度总览、核心格局、事业、财运、感情、健康、关键月份与行动建议；有复制、下载、反馈、再生成/重试样式图标与免责声明。</td><td><span class="badge confirmed">页面事实；按钮功能未执行</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="domains" class="panel">
+      <div class="section-head"><div><div class="eyebrow">02 · Product domains</div><h2>核心功能域</h2><p>只把当前可见或官方直接说明的能力列为已确认；典型产品“应该有”的模块不会自动进入当前架构。</p></div></div>
+      <div class="grid-4">
+        <article class="card"><span class="badge confirmed">已确认</span><h3>账号与个人设置</h3><p>头像、显示名、邮箱、语言、默认运势系统；账户管理入口。</p></article>
+        <article class="card"><span class="badge confirmed">已确认</span><h3>命理档案</h3><p>八字记录的搜索、新增、主档案标记与出生信息确认。</p></article>
+        <article class="card"><span class="badge confirmed">已确认</span><h3>对话式解读</h3><p>随缘、看运、倾听、问事四种任务入口与问题模板。</p></article>
+        <article class="card"><span class="badge confirmed">已确认</span><h3>结构化检索</h3><p>页面展示“查询命盘”“查询时间流”及年度、月份卡片。</p></article>
+        <article class="card"><span class="badge confirmed">已确认</span><h3>报告生成</h3><p>按总览、事业、财运、感情、健康、月份、行动建议组织长报告。</p></article>
+        <article class="card"><span class="badge confirmed">已确认</span><h3>人生星云图</h3><p>八字体系入口、信息确认、生成状态、会员/邀请解锁。</p></article>
+        <article class="card"><span class="badge confirmed">已确认</span><h3>历史与反馈</h3><p>侧栏对话记录；报告底部出现复制、赞/踩、回转样式与分享入口。</p></article>
+        <article class="card"><span class="badge confirmed">已确认</span><h3>订阅与权益</h3><p>解读次数、档案上限、历史保存、星云图、真人服务四层定价。</p></article>
+        <article class="card"><span class="badge confirmed">官方说明</span><h3>隐私与免责声明</h3><p>官方称收集账户/出生/使用/设备信息并加密记录；条款定位为娱乐与自我探索。</p></article>
+        <article class="card"><span class="badge unknown">未知</span><h3>支付与退款执行</h3><p>有升级按钮与官方退款条款，但没有支付完成、退款或取消的页面证据。</p></article>
+        <article class="card"><span class="badge unknown">未知</span><h3>失败与任务恢复</h3><p>未出现网络失败、模型失败、次数耗尽、中断、恢复或重复请求。</p></article>
+        <article class="card"><span class="badge unknown">未知</span><h3>模型选择与路由</h3><p>页面没有模型名、版本、上下文窗口、成本或动态路由证据。</p></article>
+      </div>
+    </section>
+
+    <section id="journey" class="panel">
+      <div class="section-head"><div><div class="eyebrow">03 · User journey</div><h2>用户旅程：从档案到行动建议</h2><p>三条泳道同时呈现用户意图、界面反馈和系统结果。主流程在年度报告中完成；星云图分支停在生成后的解锁门槛。</p></div><span class="badge confirmed">E-001–E-011</span></div>
+      <div class="lane" aria-label="用户泳道">
+        <div class="lane-label">用户</div>
+        <div class="node"><strong>想获得个人化洞察</strong><small>从官网进入，或直接进入工作台。E-001</small></div>
+        <div class="node decision"><strong>选择任务模式</strong><small>随缘 / 看运 / 倾听 / 问事。E-002–003</small></div>
+        <div class="node"><strong>选择既有命理档案</strong><small>使用主八字，或进入档案新增。E-006</small></div>
+        <div class="node"><strong>提出当下问题</strong><small>示例：“今年我的运势如何”。E-010</small></div>
+        <div class="node decision"><strong>继续阅读或反馈</strong><small>查看长报告、复制/下载/反馈/分享；功能未逐一执行。E-011</small></div>
+      </div>
+      <div class="lane" aria-label="产品界面泳道" style="margin-top:10px">
+        <div class="lane-label">产品界面</div>
+        <div class="node"><strong>展示定位与输入框</strong><small>“获取我的命盘分析”。</small></div>
+        <div class="node"><strong>改变提示模板</strong><small>看运关注趋势，倾听陪聊且不消耗次数，问事针对具体问题。</small></div>
+        <div class="node"><strong>呈现档案卡与确认</strong><small>八字主档案、出生信息与时辰准确性提示。</small></div>
+        <div class="node"><strong>公开过程摘要</strong><small>“思考了片刻”→“查询命盘”→“查询时间流”。</small></div>
+        <div class="node"><strong>分段呈现报告</strong><small>总览、格局、事业、财运、感情、健康、月份、建议及免责声明。</small></div>
+      </div>
+      <div class="lane" aria-label="系统结果泳道" style="margin-top:10px">
+        <div class="lane-label">系统结果</div>
+        <div class="node"><strong>建立个性化入口</strong><small>账号/档案存在是可见事实；具体读取时机待确认。</small></div>
+        <div class="node"><strong>约束解读任务</strong><small>不同模式可能切换提示模板或策略，属合理推断。</small></div>
+        <div class="node"><strong>返回命盘结构</strong><small>命盘卡、流年、流月与 12 个月时间流均可见。</small></div>
+        <div class="node"><strong>综合生成解释</strong><small>把命盘和时间流转为可理解的章节化建议。</small></div>
+        <div class="node decision"><strong>正常 / 付费门槛</strong><small>年度解读可见；星云图“已生成”后仍需升级或邀请解锁。E-009</small></div>
+      </div>
+      <div class="journey-note">
+        <div class="emotion"><b>期待</b><span>“它是否真的懂我？”</span></div><div class="emotion"><b>掌控</b><span>四种模式降低空白输入压力。</span></div><div class="emotion"><b>审慎</b><span>出生时辰影响结果，确认成本高。</span></div><div class="emotion"><b>好奇</b><span>公开检索步骤建立“有依据”的感受。</span></div><div class="emotion"><b>收获 / 挫败</b><span>报告完整；星云图在生成后才暴露解锁门槛。</span></div>
+      </div>
+      <div class="grid-3" style="margin-top:18px">
+        <article class="card"><h3>主要痛点</h3><ul><li>“已生成”与“不可查看”语义冲突。</li><li>个人敏感出生数据缺少就地用途说明。</li><li>公开过程摘要很有说服力，但没有证据/规则解释层。</li></ul></article>
+        <article class="card"><h3>产品机会</h3><ul><li>生成前显示权益与解锁成本。</li><li>为每个结论提供命盘与时间流的“依据卡”。</li><li>把行动建议变成可跟踪计划，而非一次性文本。</li></ul></article>
+        <article class="card"><h3>三个讨论题</h3><ul><li>“陪伴”模式如何避免形成错误依赖？</li><li>敏感结论是否需要置信度和风险提示？</li><li>免费额度应在输入前还是生成后展示？</li></ul></article>
+      </div>
+    </section>
+
+    <section id="agents" class="panel">
+      <div class="section-head"><div><div class="eyebrow">04 · Observable capability contract</div><h2>Agent 识别：页面没有具名 Agent</h2><p>本次证据只支持一个未具名的“AI 解读服务”对用户输出，以及两个公开显示的功能步骤。它们不能被直接拆成三个 Agent。</p></div><span class="badge unknown">具名 Agent：0</span></div>
+      <div class="callout warn"><b>Stage 3 完成门未满足：</b>没有页面具名 Agent，因此不生成或冒充官方 System Prompt。下文仅给出“可观察能力契约”，供后续在获得目标 Agent 名称或更多运行证据后继续。</div>
+      <div class="pipeline" style="margin-top:18px">
+        <article class="pipe"><span class="badge confirmed">用户输入</span><h3>年度运势问题</h3><p>自然语言问题 + 当前账号下已存在的主八字档案。</p></article>
+        <article class="pipe"><span class="badge confirmed">公开步骤</span><h3>查询命盘</h3><p>返回命盘卡与八字结构。功能名来自页面，不是官方 API 名。</p></article>
+        <article class="pipe"><span class="badge confirmed">公开步骤</span><h3>查询时间流</h3><p>返回流年、流月和 12 个月卡片。功能名来自页面。</p></article>
+        <article class="pipe"><span class="badge inferred">合理推断</span><h3>综合解释</h3><p>结合命盘、时间与用户问题，组织结构化自然语言报告。</p></article>
+        <article class="pipe"><span class="badge confirmed">页面输出</span><h3>结果与反馈</h3><p>长报告、表格、行动建议、免责声明以及反馈/分享样式控件。</p></article>
+      </div>
+      <div class="grid-2">
+        <article class="card"><h3>输入契约</h3><ul><li><b>用户当前输入：</b>具体问题、所选模式。</li><li><b>用户长期信息：</b>账号语言、默认运势系统、命理档案存在；是否被本次运行读取，除命盘卡呈现外其余待确认。</li><li><b>项目/会话上下文：</b>当前对话、选中命盘、流年/流月。</li><li><b>平台知识：</b>八字、十神、干支、流年解释规则；来源和版本未知。</li></ul></article>
+        <article class="card"><h3>输出契约</h3><ul><li><b>用户回复：</b>章节化年度解读与行动建议。</li><li><b>页面组件：</b>过程时间线、命盘/时间流卡片、表格、反馈控件。</li><li><b>结构化结果：</b>年度摘要、维度关系、关键月份；是否持久化为字段未知。</li><li><b>状态：</b>“思考了片刻”与绿色完成标记；后台状态名未知。</li></ul></article>
+      </div>
+      <div class="table-wrap" style="margin-top:18px">
+        <table><thead><tr><th>功能工具（非官方工具名）</th><th>页面前置</th><th>可见结果</th><th>失败 / 重试</th><th>证据</th></tr></thead><tbody>
+          <tr><td>读取命理档案</td><td>存在可选择的主八字</td><td>命盘卡出现</td><td>未知</td><td>E-006, E-010</td></tr>
+          <tr><td>查询命盘</td><td>年度问题已提交</td><td>绿色完成标记 + 八字卡</td><td>未知</td><td>E-010</td></tr>
+          <tr><td>查询时间流</td><td>目标年份可解析</td><td>流年、流月、12 项月份卡</td><td>未知</td><td>E-010</td></tr>
+          <tr><td>生成解读报告</td><td>命盘与时间流结果已出现</td><td>完整章节与表格</td><td>底部有回转样式图标，但未执行，不能确认重试语义</td><td>E-011</td></tr>
+          <tr><td>检查权益 / 解锁</td><td>星云图生成状态出现</td><td>会员升级或邀请 2 人解锁</td><td>未知</td><td>E-009</td></tr>
+        </tbody></table>
+      </div>
+    </section>
+
+    <section id="context" class="panel">
+      <div class="section-head"><div><div class="eyebrow">05 · Context & data</div><h2>全局上下文：逐字段取证，不按模板填满</h2><p>每个候选字段分别审计存在、可见值、写入、读取与下游消费。语义域名称是分析框架，不代表官方 schema。</p></div></div>
+      <div class="filters" role="group" aria-label="按证据等级筛选字段">
+        <button type="button" data-filter="all" aria-pressed="true">全部</button><button type="button" data-filter="confirmed" aria-pressed="false">已确认</button><button type="button" data-filter="inferred" aria-pressed="false">合理推断</button><button type="button" data-filter="recommended" aria-pressed="false">建议设计</button><button type="button" data-filter="unknown" aria-pressed="false">未知</button>
+      </div>
+      <div class="table-wrap">
+        <table id="fieldTable"><thead><tr><th>候选域 / 字段</th><th>存在与值</th><th>写入证据</th><th>读取 / 消费证据</th><th>结论</th></tr></thead><tbody>
+          <tr data-class="confirmed"><td>UserContext：语言</td><td>设置页显示“简体中文”</td><td>有下拉控件，但未操作</td><td>页面确为中文；因果关系未直接验证</td><td><span class="badge confirmed">字段存在已确认</span></td></tr>
+          <tr data-class="confirmed"><td>UserContext：默认运势系统</td><td>显示“八字运势（东方命理）”</td><td>有下拉控件，未操作</td><td>本次看运使用八字，但是否由该字段驱动仍待确认</td><td><span class="badge confirmed">存在和值已确认</span></td></tr>
+          <tr data-class="confirmed"><td>Profile / BaZi：出生信息</td><td>确认页显示日期、时辰、地点、四柱等</td><td>此前创建过程未截图</td><td>命盘和年度解读明显引用同一四柱</td><td><span class="badge confirmed">存在与消费已确认</span></td></tr>
+          <tr data-class="confirmed"><td>TimeFlow：流年/流月</td><td>2026 流年、当前月与 12 个月卡可见</td><td>由查询步骤产生；具体写入未知</td><td>报告月份建议与卡片相互对应</td><td><span class="badge confirmed">产生与消费已确认</span></td></tr>
+          <tr data-class="confirmed"><td>Conversation：当前问题</td><td>“今年我的运势如何”可见</td><td>用户消息气泡证明已提交</td><td>最终回答明确围绕 2026 年运势</td><td><span class="badge confirmed">读写消费已确认</span></td></tr>
+          <tr data-class="confirmed"><td>Entitlement：会员计划/额度</td><td>四档计划和解读次数可见</td><td>购买未执行</td><td>星云图被烛照版及以上门槛拦截</td><td><span class="badge confirmed">存在与消费已确认</span></td></tr>
+          <tr data-class="confirmed"><td>History：对话记录</td><td>侧栏可见“今年运势分析”及“1 天前”</td><td>新对话保存过程未单独展示</td><td>当前对话 URL 含会话 ID</td><td><span class="badge confirmed">存在已确认</span></td></tr>
+          <tr data-class="inferred"><td>ReadingMode</td><td>随缘/看运/倾听/问事选择可见</td><td>选中状态变化可见</td><td>提示模板与“不消耗次数”文案变化</td><td><span class="badge inferred">行为字段合理推断</span></td></tr>
+          <tr data-class="inferred"><td>ReportContext</td><td>最终报告结构可见</td><td>生成过程存在</td><td>复制/下载样式按钮可能消费报告内容</td><td><span class="badge inferred">对象存在合理推断</span></td></tr>
+          <tr data-class="recommended"><td>WorkflowState</td><td>只见“思考了片刻”和步骤完成标记</td><td>后台写入不可见</td><td>页面显示依赖某种状态机制</td><td><span class="badge recommended">建议显式状态机</span></td></tr>
+          <tr data-class="recommended"><td>EvidenceTrace</td><td>当前没有每条结论的规则/证据引用</td><td>无</td><td>无</td><td><span class="badge recommended">建议新增解释链</span></td></tr>
+          <tr data-class="unknown"><td>ModelInvocation / ToolCall</td><td>没有模型名、调用 ID 或函数名</td><td>不可见</td><td>不可见</td><td><span class="badge unknown">未知</span></td></tr>
+          <tr data-class="unknown"><td>BillingHold / RefundRecord</td><td>只见方案与官方退款条款</td><td>未购买</td><td>未消费</td><td><span class="badge unknown">未知</span></td></tr>
+        </tbody></table>
+      </div>
+      <details style="margin-top:18px"><summary>查看建议的数据实体关系（分析模板，不是官方表名）</summary><div class="detail-body"><pre>erDiagram
+  USER ||--o{ DESTINY_PROFILE : owns
+  USER ||--o{ CONVERSATION : starts
+  USER ||--o{ SUBSCRIPTION : holds
+  DESTINY_PROFILE ||--o{ CHART_VERSION : produces
+  CONVERSATION ||--o{ READING_RUN : contains
+  READING_RUN }o--|| CHART_VERSION : reads
+  READING_RUN ||--o{ TIME_FLOW_RESULT : queries
+  READING_RUN ||--|| REPORT : produces
+  REPORT ||--o{ FEEDBACK : receives
+  SUBSCRIPTION ||--o{ ENTITLEMENT : grants</pre><p class="callout"><b>页面有证据的关系：</b>用户—档案、对话—问题、问题—命盘/时间流、运行—报告、订阅—权益。<br><b>架构推导：</b>版本、运行记录、反馈实体和显式 entitlement 对象。</p></div></details>
+    </section>
+
+    <section id="architecture" class="panel">
+      <div class="section-head"><div><div class="eyebrow">06 · Product architecture</div><h2>产品全景架构</h2><p>实线/普通边框为已确认，虚线为合理推断，点线为建议设计。箭头语义在下方端到端链路中用“调用、读取、写入、确认、资产引用、状态更新”明确标注。</p></div></div>
+      <div class="architecture" aria-label="分层产品架构图">
+        <div class="layer"><div class="layer-title">1 用户与渠道</div><div class="components"><span class="component">官网访客</span><span class="component">登录用户</span><span class="component">个人资料与语言</span><span class="component">会员计划与邀请</span></div></div>
+        <div class="layer"><div class="layer-title">2 交互工作台</div><div class="components"><span class="component">四模式聊天</span><span class="component">公开过程时间线</span><span class="component">命盘/时间流卡片</span><span class="component">长报告与表格</span><span class="component">档案/订阅/设置</span><span class="component">星云图付费墙</span></div></div>
+        <div class="layer"><div class="layer-title">3 产品应用</div><div class="components"><span class="component">档案管理</span><span class="component">八字排盘</span><span class="component">运势解读</span><span class="component">对话历史</span><span class="component">权益管理</span><span class="component">报告反馈/分享入口</span></div></div>
+        <div class="layer"><div class="layer-title">4 流程与 AI</div><div class="components"><span class="component inf">任务模式策略</span><span class="component inf">命盘检索编排</span><span class="component inf">时间流检索编排</span><span class="component inf">解释生成</span><span class="component rec">完成门与冲突检测</span><span class="component rec">可取消状态机</span></div></div>
+        <div class="layer"><div class="layer-title">5 工具与服务</div><div class="components"><span class="component">八字/真太阳时计算（官方能力）</span><span class="component inf">流年流月计算</span><span class="component inf">报告组装</span><span class="component inf">权益检查</span><span class="component rec">安全提示强制器</span><span class="component rec">幂等计费服务</span></div></div>
+        <div class="layer"><div class="layer-title">6 模型接入</div><div class="components"><span class="component inf">文本生成模型</span><span class="component rec">模型能力注册表</span><span class="component rec">输出风险分类器</span><span class="component rec">提示模板版本</span><span class="component" style="border-color:var(--unknown)">具体供应商：未知</span></div></div>
+        <div class="layer"><div class="layer-title">7 数据与上下文</div><div class="components"><span class="component">用户/档案/出生信息</span><span class="component">对话/历史</span><span class="component">命盘/时间流结果</span><span class="component">订阅权益</span><span class="component">Neon PostgreSQL + Drizzle（官方历史披露）</span><span class="component rec">版本化报告与运行记录</span></div></div>
+        <div class="layer"><div class="layer-title">8 知识与规则</div><div class="components"><span class="component">官方称自研八字喜用神算法</span><span class="component">八字/五行/十神知识</span><span class="component">定价与隐私规则</span><span class="component">娱乐/自我探索免责声明</span><span class="component rec">知识版本与来源治理</span></div></div>
+        <div class="layer"><div class="layer-title">9 基础设施治理</div><div class="components"><span class="component">PostgreSQL 时间/地理数据能力（官方历史披露）</span><span class="component inf">Serverless 运行形态</span><span class="component rec">全链路追踪</span><span class="component rec">租户隔离与最小化留存</span><span class="component rec">告警/评测/成本监控</span></div></div>
+      </div>
+      <div class="legend"><span><i class="line"></i>已确认</span><span><i class="line dash"></i>合理推断</span><span><i class="line dotline"></i>建议设计</span></div>
+      <div class="pipeline" style="margin-top:20px">
+        <article class="pipe"><b>用户问题</b><p>调用：聊天工作台<br>写入：Conversation</p></article>
+        <article class="pipe"><b>模式与档案</b><p>读取：ReadingMode / Profile<br>确认：出生信息</p></article>
+        <article class="pipe"><b>命盘与时间流</b><p>调用：功能工具<br>写入/返回：结构化结果</p></article>
+        <article class="pipe"><b>AI 解释</b><p>读取：问题 + 命盘 + 时间流<br>资产引用：报告引用结构化结果</p></article>
+        <article class="pipe"><b>报告与权益</b><p>状态更新：完成/失败<br>确认：反馈、分享或升级</p></article>
+      </div>
+      <details><summary>查看端到端时序图源代码与文本替代</summary><div class="detail-body"><pre>sequenceDiagram
+  participant U as 用户
+  participant W as 聊天/档案工作台
+  participant O as 解读流程（推断）
+  participant C as 上下文/业务数据
+  participant T as 命盘与时间流工具（功能名）
+  participant M as 文本生成模型（供应商未知）
+  participant B as 权益与计费
+  U->>W: 选择模式、档案并提交问题
+  W->>C: 写入问题 / 读取主八字
+  W->>O: 事件：启动年度解读
+  O->>T: 调用：查询命盘
+  T-->>O: 返回命盘卡
+  O->>T: 调用：查询流年/流月
+  T-->>O: 返回时间流卡
+  O->>M: 调用：问题 + 命盘 + 时间流
+  M-->>O: 结构化解释草稿
+  O->>C: 写入报告/状态（合理推断）
+  O-->>W: 状态更新 + 报告
+  W-->>U: 展示、反馈、分享入口
+  alt 星云图权益不足
+    W->>B: 读取权益
+    B-->>W: 升级或邀请解锁
+  end</pre><p>文本替代：用户输入先由工作台绑定命理档案，再依次展示命盘与时间流检索结果，随后生成章节化解释；星云图在内容展示前增加权益判断。失败、中断、重试均无页面证据。</p></div></details>
+    </section>
+
+    <section id="as-is" class="panel">
+      <div class="section-head"><div><div class="eyebrow">07 · As-Is / To-Be</div><h2>当前架构与建议架构</h2></div></div>
+      <div class="grid-2">
+        <article class="card"><h3>As-Is：当前可确认</h3><ul><li>对话、档案、命盘查询、时间流查询、报告和订阅权益已形成业务闭环。</li><li>过程以可折叠时间线公开，结构化卡片先于长报告出现。</li><li>免费额度与付费层级清晰，但星云图权益在“生成后”才强曝光。</li><li>官方隐私政策声称加密与用户删除/导出权利。</li><li>官方历史技术披露：Neon PostgreSQL、Drizzle ORM、真太阳时与地理数据需求。</li></ul></article>
+        <article class="card"><h3>To-Be：建议补充</h3><ul><li>统一事实源：运行、工具结果、报告、权益和页面状态使用同一 run ID。</li><li>结论证据链：每个建议可回看命盘字段、时间流规则与知识版本。</li><li>权益前置：生成前预估消耗和可见范围，避免“已生成但不可看”。</li><li>安全完成门：健康/财务/情感建议强制免责声明和专业求助边界。</li><li>局部重算：出生信息或命盘修改时，让所有依赖报告显式失效。</li><li>幂等与取消：重复提交不重复扣次；用户中断要向下游传播。</li></ul></article>
+      </div>
+    </section>
+
+    <section id="risks" class="panel">
+      <div class="section-head"><div><div class="eyebrow">08 · Risks</div><h2>关键架构与体验风险</h2><p>优先级综合用户伤害、信任损失、付费争议和数据敏感性。</p></div></div>
+      <div class="risk"><span class="priority">P0</span><div><h3>敏感出生数据与心理/健康推断</h3><p>产品处理出生日期、时间、地点和私人问题；报告还给出健康与关系建议。需要最小化采集、细粒度授权、可删除/导出、访问审计和高风险内容边界。</p></div><span class="badge recommended">建议设计</span></div>
+      <div class="risk"><span class="priority">P0</span><div><h3>“已生成”与“可消费”状态不一致</h3><p>星云图显示已生成，但用户仍无法查看。若后台已消耗算力或次数，会造成计费和信任争议。</p></div><span class="badge confirmed">E-009</span></div>
+      <div class="risk"><span class="priority">P1</span><div><h3>解释链不足导致过度可信</h3><p>公开检索步骤增强可信度，但最终结论没有逐条规则、来源、置信度或反例，容易把生成性语言误当成确定判断。</p></div><span class="badge inferred">合理推断</span></div>
+      <div class="risk"><span class="priority">P1</span><div><h3>上游档案变更后的陈旧报告</h3><p>出生时辰被页面强调为关键变量，但没有证据表明修改后会使旧命盘、时间流和报告失效。</p></div><span class="badge unknown">未知</span></div>
+      <div class="risk"><span class="priority">P1</span><div><h3>重复请求与重复扣次</h3><p>免费/付费计划按解读次数计费，页面又有回转样式按钮；没有运行时幂等与重试扣次证据。</p></div><span class="badge unknown">未知</span></div>
+      <div class="risk"><span class="priority">P2</span><div><h3>聊天完成、历史保存、导出内容可能冲突</h3><p>截图只显示单次成功结果，未验证聊天文本、历史记录、复制、下载与分享落地内容是否来自同一版本。</p></div><span class="badge unknown">未知</span></div>
+    </section>
+
+    <section id="trace" class="panel">
+      <div class="section-head"><div><div class="eyebrow">09 · Traceability</div><h2>架构组件—证据追溯</h2></div></div>
+      <div class="table-wrap"><table><thead><tr><th>组件</th><th>为什么需要</th><th>证据</th><th>分类</th><th>置信度</th></tr></thead><tbody>
+        <tr><td>四模式聊天工作台</td><td>承载不同用户意图与提示模板</td><td>E-002, E-003</td><td>已确认</td><td>高</td></tr>
+        <tr><td>命理档案服务</td><td>保存并选择八字主档案</td><td>E-004, E-006, E-008</td><td>已确认</td><td>高</td></tr>
+        <tr><td>命盘/时间流查询</td><td>为年度解读提供结构化输入</td><td>E-010</td><td>已确认（功能步骤）</td><td>高</td></tr>
+        <tr><td>AI 解释生成</td><td>把结构化结果转为自然语言行动建议</td><td>E-011 + 官方定位</td><td>已确认能力；内部实现未知</td><td>高/中</td></tr>
+        <tr><td>权益与计费</td><td>按次数、档案、星云图、真人服务分层</td><td>E-005, E-009 + 官网</td><td>已确认</td><td>高</td></tr>
+        <tr><td>Neon PostgreSQL / Drizzle</td><td>处理时间、地理与结构化业务数据</td><td>官方 2025-12-28 工程文章</td><td>官方历史披露</td><td>高（当时）</td></tr>
+        <tr><td>模型网关</td><td>若需要切换模型、治理成本与失败，通常需要统一接入</td><td>无页面/官方直接证据</td><td>建议设计，不列为 As-Is</td><td>低</td></tr>
+        <tr><td>运行状态机/完成门</td><td>消除已生成/不可查看、工具完成/页面完成冲突</td><td>E-009 的状态张力</td><td>建议设计</td><td>高（设计必要性）</td></tr>
+        <tr><td>知识版本与解释链</td><td>让命理规则、结论和提示模板可复核</td><td>当前报告有结论但无来源链</td><td>建议设计</td><td>高（设计必要性）</td></tr>
+      </tbody></table></div>
+    </section>
+
+    <section id="sources" class="panel">
+      <div class="section-head"><div><div class="eyebrow">10 · Official sources</div><h2>官方资料清单</h2><p>官方资料用于补充定位、权益、隐私、免责声明、命理知识与公开技术选型；不会用第三方评论确认架构。</p></div></div>
+      <div class="source-list">
+        <div class="source"><span class="badge confirmed">官网</span><a href="https://www.metasight.cloud/zh">新一代 AI 命理系统：定位、能力与定价</a><span>访问于 2026-08-18</span></div>
+        <div class="source"><span class="badge confirmed">隐私</span><a href="https://www.metasight.cloud/zh/privacy">隐私政策：收集、使用、加密、保留与用户权利</a><span>官方</span></div>
+        <div class="source"><span class="badge confirmed">条款</span><a href="https://www.metasight.cloud/terms">服务条款：娱乐/自我探索定位、订阅与退款</a><span>官方</span></div>
+        <div class="source"><span class="badge confirmed">创始人</span><a href="https://www.metasight.cloud/blog/founder-story">创始人故事：自研八字喜用神算法与 AI 解释定位</a><span>2026-01-12</span></div>
+        <div class="source"><span class="badge confirmed">知识</span><a href="https://www.metasight.cloud/blog/why-is-destiny-reading-so-accurate">八字与占星的知识框架</a><span>2026-01-12</span></div>
+        <div class="source"><span class="badge confirmed">工程</span><a href="https://www.metasight.cloud/blog/turso-to-neon-migration">从 Turso 到 Neon：PostgreSQL、Drizzle、时间与地理数据</a><span>2025-12-28</span></div>
+      </div>
+    </section>
+
+    <section id="unknowns" class="panel">
+      <div class="section-head"><div><div class="eyebrow">11 · Remaining unknowns</div><h2>最值得继续验证的五个问题</h2></div></div>
+      <div class="grid-2">
+        <article class="card"><h3>1. 解读次数何时扣减？</h3><p>提交、工具成功、报告完成还是用户首次查看？失败和重复请求是否退回。</p></article>
+        <article class="card"><h3>2. “星云图已生成”意味着什么？</h3><p>是真实资产存在、任务完成，还是仅完成前置计算；未解锁时是否已经产生计费。</p></article>
+        <article class="card"><h3>3. 档案修改如何传播？</h3><p>出生时间/地点变更后，旧命盘、时间流、报告和星云图是否自动失效并保留版本。</p></article>
+        <article class="card"><h3>4. 公开步骤对应什么运行事件？</h3><p>“查询命盘/时间流”是否是独立工具结果、缓存读取，还是仅展示性文案。</p></article>
+        <article class="card"><h3>5. 高风险建议如何治理？</h3><p>健康、财务、情感内容是否有规则层、人工评测、风险分类、紧急求助与未成年人保护。</p></article>
+        <article class="card"><h3>下一阶段入口</h3><p>若补充某次失败、次数耗尽、修改档案、重新生成和支付后的截图，可继续完成状态机、幂等计费与单 Agent 功能等价 Prompt。</p></article>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>本报告基于用户提供的页面截图与 MetaSight 官方公开资料。命理结论不是本报告的分析对象；报告只拆解产品行为、数据流与架构边界。任何语义字段名和建议实体均为分析设计，不冒充官方 schema。</p>
+  </footer>
+  <script>
+    const root=document.documentElement;
+    document.getElementById('themeToggle').addEventListener('click',()=>{
+      const next=root.dataset.theme==='dark'?'light':'dark';root.dataset.theme=next;
+    });
+    const filterButtons=[...document.querySelectorAll('[data-filter]')];
+    const rows=[...document.querySelectorAll('#fieldTable tbody tr')];
+    filterButtons.forEach(btn=>btn.addEventListener('click',()=>{
+      filterButtons.forEach(b=>b.setAttribute('aria-pressed','false'));btn.setAttribute('aria-pressed','true');
+      const value=btn.dataset.filter;rows.forEach(row=>{row.hidden=value!=='all'&&row.dataset.class!==value;});
+    }));
+  </script>
+</body>
+</html>
