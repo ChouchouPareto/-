@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="基于8张抖音来客页面截图与官方资料的证据分级产品逆向分析报告">
+  <title>抖音来客智能助手｜产品拆解报告</title>
+  <style>
+    :root{--bg:#06101d;--panel:#0d1a2c;--panel2:#13233a;--panel3:#182b46;--text:#f7f9fd;--muted:#aab8cc;--line:#29405f;--blue:#72a7ff;--orange:#ffad5b;--green:#5cddb0;--red:#ff858b;--violet:#c1a7ff;--shadow:0 18px 48px rgba(0,0,0,.28);--radius:20px;--header:70px}
+    [data-theme="light"]{--bg:#eef4fb;--panel:#fff;--panel2:#f7faff;--panel3:#edf4ff;--text:#122033;--muted:#52647c;--line:#cad8ea;--blue:#145ec9;--orange:#a84b00;--green:#087654;--red:#b22433;--violet:#6842b5;--shadow:0 14px 36px rgba(20,45,80,.11)}
+    *{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:calc(var(--header) + 18px)}body{margin:0;background:radial-gradient(circle at 85% 0,color-mix(in srgb,var(--blue) 10%,transparent),transparent 28%),var(--bg);color:var(--text);font:16px/1.65 Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif}a{color:var(--blue);text-underline-offset:3px}button,a,summary{cursor:pointer}:focus-visible{outline:3px solid var(--orange);outline-offset:3px}.skip{position:fixed;left:16px;top:-90px;z-index:99;background:var(--text);color:var(--bg);padding:12px 16px;border-radius:10px}.skip:focus{top:12px}
+    header{height:var(--header);position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:24px;padding:0 3.5vw;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(15px);border-bottom:1px solid var(--line)}.brand{font-weight:850;letter-spacing:.02em;white-space:nowrap}.brand small{display:block;font:650 10px/1.15 ui-monospace,monospace;letter-spacing:.15em;color:var(--orange)}nav{display:flex;gap:17px;overflow:auto;margin-left:auto}nav a{color:var(--muted);text-decoration:none;font-size:13px;white-space:nowrap}nav a:hover{color:var(--text)}.theme{min-width:54px;height:44px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);color:var(--text);font-weight:750}
+    main{width:min(1500px,94vw);margin:auto;padding:38px 0 90px}.hero{display:grid;grid-template-columns:1.5fr .78fr;gap:22px}.hero>div,section,.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}.hero-main{padding:clamp(28px,4vw,62px)}.eyebrow{font:750 12px/1.2 ui-monospace,monospace;letter-spacing:.15em;color:var(--orange);text-transform:uppercase}.hero h1{font-size:clamp(43px,6vw,86px);line-height:.95;letter-spacing:-.05em;margin:24px 0}.hero p{font-size:clamp(18px,1.8vw,25px);color:var(--muted);max-width:920px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-top:30px}.stat{border:1px solid var(--line);padding:17px;border-radius:15px;background:var(--panel2)}.stat strong{display:block;font-size:31px}.stat span{color:var(--muted);font-size:13px}.boundary{padding:30px}.boundary h2{font-size:30px;margin:0 0 17px}.legend{display:grid;gap:12px}.legend div{display:grid;grid-template-columns:14px 1fr;gap:11px;color:var(--muted)}.dot{width:10px;height:10px;border-radius:50%;margin-top:8px}.c{background:var(--green)}.i{background:var(--orange)}.r{background:var(--violet)}.u{background:var(--red)}.alert{border-left:5px solid var(--red);background:var(--panel2);padding:17px;margin-top:20px;border-radius:0 14px 14px 0}
+    section{padding:clamp(24px,3vw,44px);margin-top:24px}section h2{font-size:clamp(28px,3vw,45px);line-height:1.15;margin:7px 0 18px;letter-spacing:-.025em}section h3{font-size:22px;margin:28px 0 12px}.lead{color:var(--muted);max-width:1080px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.card{padding:21px;background:var(--panel2);box-shadow:none}.card h3{margin:0 0 8px}.card p,.card li{color:var(--muted)}.badge{display:inline-flex;align-items:center;min-height:28px;padding:3px 9px;border:1px solid currentColor;border-radius:999px;font-size:12px;font-weight:850;white-space:nowrap}.confirmed{color:var(--green)}.inferred{color:var(--orange)}.recommended{color:var(--violet)}.unknown{color:var(--red)}
+    .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:15px;margin:15px 0}table{border-collapse:collapse;width:100%;min-width:950px;background:var(--panel2)}th,td{text-align:left;vertical-align:top;padding:13px 14px;border-bottom:1px solid var(--line)}th{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);background:color-mix(in srgb,var(--panel2) 80%,var(--blue) 20%)}td{font-size:14px}tr:last-child td{border:0}.filters{display:flex;gap:8px;flex-wrap:wrap;margin:13px 0}.filter{min-height:44px;border:1px solid var(--line);border-radius:12px;padding:8px 13px;background:var(--panel2);color:var(--text);font-weight:750}.filter[aria-pressed="true"]{border-color:var(--orange);color:var(--orange)}
+    .journey{display:grid;grid-template-columns:125px repeat(6,minmax(195px,1fr));gap:8px;overflow-x:auto;padding-bottom:8px}.lane,.node{border:1px solid var(--line);border-radius:14px;padding:14px;min-height:116px}.lane{display:grid;place-items:center;font-weight:850;position:sticky;left:0;background:var(--panel);z-index:2}.node{background:var(--panel2)}.node strong{display:block;margin-bottom:4px}.node small{color:var(--muted)}.emotion{margin-top:8px;color:var(--orange);font-size:13px}.decision{border-style:dashed;border-color:var(--orange)}
+    .pipeline{display:grid;grid-template-columns:repeat(7,1fr);gap:9px;margin:17px 0}.step{position:relative;padding:16px;background:var(--panel2);border:1px solid var(--line);border-radius:14px}.step:not(:last-child)::after{content:"→";position:absolute;right:-10px;top:42%;color:var(--orange);z-index:2}.step b{display:block}.step small{color:var(--muted)}.layers{display:grid;gap:10px}.layer{display:grid;grid-template-columns:185px 1fr;gap:15px;align-items:start;border:1px solid var(--line);border-radius:15px;padding:15px;background:var(--panel2)}.layer>strong{color:var(--blue)}.chips{display:flex;gap:8px;flex-wrap:wrap}.chip{border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-size:13px}.solid{border-style:solid}.dash{border-style:dashed;color:var(--orange)}.dotted{border-style:dotted;color:var(--violet)}
+    pre{white-space:pre;overflow:auto;padding:18px;background:#040a13;color:#dceaff;border:1px solid var(--line);border-radius:14px;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace}.callout{border:1px solid var(--orange);background:color-mix(in srgb,var(--panel2) 91%,var(--orange) 9%);padding:17px;border-radius:14px}.prompt-box{margin:15px 0;border:1px solid var(--line);border-radius:15px;background:var(--panel2);overflow:hidden}.prompt-box summary{min-height:54px;padding:13px 18px;display:flex;align-items:center;justify-content:space-between;font-weight:850;color:var(--blue)}.prompt-box[open] summary{border-bottom:1px solid var(--line)}.prompt-box pre{margin:0;border:0;border-radius:0;max-height:760px}.copy{min-height:44px;border:1px solid var(--line);border-radius:11px;padding:8px 13px;background:var(--panel3);color:var(--text);font-weight:750}.risk{display:grid;grid-template-columns:58px 1fr;gap:14px;padding:16px 0;border-bottom:1px solid var(--line)}.risk:last-child{border:0}.rank{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:var(--red);color:#1b0508;font-weight:900}.source-list li{margin:8px 0;color:var(--muted)}footer{color:var(--muted);text-align:center;padding:40px 0 0}
+    @media(max-width:1080px){.hero{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr 1fr}.pipeline{grid-template-columns:repeat(2,1fr)}.step::after{display:none}.layer{grid-template-columns:1fr}}
+    @media(max-width:680px){:root{--header:62px}header{padding:0 14px}.brand small,nav{display:none}main{width:94vw;padding-top:20px}.hero h1{font-size:46px}.stats,.grid,.grid.two{grid-template-columns:1fr}section,.hero-main,.boundary{padding:21px}.pipeline{grid-template-columns:1fr}.journey{grid-template-columns:106px repeat(6,250px)}.prompt-box summary{align-items:flex-start;flex-direction:column;gap:8px}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+    @media print{header,.theme,.filters,.copy{display:none}body{background:#fff;color:#111}main{width:100%}.hero>div,section,.card{box-shadow:none;break-inside:avoid}pre{white-space:pre-wrap;color:#111;background:#fff}}
+  </style>
+</head>
+<body>
+<a class="skip" href="#main">跳到正文</a>
+<header><div class="brand">抖音来客 <small>EVIDENCE WORKBENCH</small></div><nav aria-label="章节导航"><a href="#evidence">证据</a><a href="#journey">旅程</a><a href="#agents">Agent</a><a href="#prompt">Sys Prompt</a><a href="#models">模型</a><a href="#architecture">架构</a><a href="#risks">风险</a><a href="#trace">追溯</a></nav><button class="theme" id="theme" aria-label="切换明暗主题">主题</button></header>
+<main id="main">
+  <div class="hero">
+    <div class="hero-main"><div class="eyebrow">Product reverse analysis · 2026-08-18</div><h1>抖音来客<br>智能助手拆解</h1><p>它把商家经营数据、平台策略与商品上架操作压缩进一个对话式工作台：先用周报/月报解释经营，再以推荐参数和结构化表单引导商家创建代金券，经过两次确认后提交平台审核。</p><div class="stats"><div class="stat"><strong>8</strong><span>张连续页面截图</span></div><div class="stat"><strong>1</strong><span>个可确认智能助手身份</span></div><div class="stat"><strong>2</strong><span>次关键用户确认</span></div><div class="stat"><strong>1</strong><span>条提交审核成功链路</span></div></div></div>
+    <div class="boundary"><h2>结论边界</h2><div class="legend"><div><span class="dot c"></span><span><b>已确认</b>：截图、官方页面或可复核结果直接支持。</span></div><div><span class="dot i"></span><span><b>合理推断</b>：多条行为支持，但实现不可见。</span></div><div><span class="dot r"></span><span><b>建议设计</b>：为了稳定、安全和治理提出。</span></div><div><span class="dot u"></span><span><b>未知</b>：没有足够证据，不默认存在。</span></div></div><div class="alert"><b>关键范围纠偏</b><br>文件夹名叫“智能客服”，但截图展示的是面向商家的“智能助手/店长情报速递”经营流程。官方协议确认另有面向消费者咨询的“智能客服”产品；当前没有证据证明二者是同一 Agent、同一模型或同一知识库。</div></div>
+  </div>
+
+  <section id="evidence"><div class="eyebrow">01 · Scope & evidence</div><h2>查看范围与证据清单</h2><p class="lead">截图时间集中在 23:10–23:12。文件名辅助排序，真正的先后关系由页面承接验证：入口卡 → 报表 → 服务配置 → 参数确认 → 商品信息确认 → 提交审核成功。</p>
+    <div class="table-wrap"><table><thead><tr><th>证据</th><th>截图</th><th>页面事实</th><th>可确认程度</th></tr></thead><tbody>
+      <tr><td>E-01</td><td><a href="#" title="原始截图未随仓库公开">S59</a></td><td>“店长情报速递”首页；暑期经营指南、7月经营月报、上新1个商品、生成脚本；底部有“经营托管”“帮我上品”、文本与语音输入。</td><td><span class="badge confirmed">已确认</span></td></tr>
+      <tr><td>E-02</td><td><a href="#" title="原始截图未随仓库公开">S60</a></td><td>暑期经营指南弹层展示“同行的暑期爆品长这样”，按钮“去上线”。</td><td><span class="badge confirmed">已确认</span></td></tr>
+      <tr><td>E-03</td><td><a href="#" title="原始截图未随仓库公开">S61</a></td><td>7月月报：镇安超市，成交¥49、核销¥0、退款¥0、门店榜第1038；商品TOP3展示“50元代金券”。</td><td><span class="badge confirmed">已确认</span></td></tr>
+      <tr><td>E-04</td><td><a href="#" title="原始截图未随仓库公开">S62</a></td><td>08/10–08/16周报：成交/核销显示“--”、转化率0、未上榜，却写“本周业绩稳定”。</td><td><span class="badge confirmed">冲突事实</span></td></tr>
+      <tr><td>E-05</td><td><a href="#" title="原始截图未随仓库公开">S63</a>–<a href="#" title="原始截图未随仓库公开">S64</a></td><td>助手参考同品类热销情况推荐“98元代100元代金券”，预填面额100、顾客实付98；按钮“确认”和“停止当前流程”。</td><td><span class="badge confirmed">已确认</span></td></tr>
+      <tr><td>E-06</td><td><a href="#" title="原始截图未随仓库公开">S65</a></td><td>用户消息“已确认代金券面额及售价”；新增代金券名称“100元代金券”、展示图、查看详情、提交审核。</td><td><span class="badge confirmed">状态变化</span></td></tr>
+      <tr><td>E-07</td><td><a href="#" title="原始截图未随仓库公开">S66</a></td><td>用户消息“已确认商品信息提交审核”；结果卡“代金券提交成功/商品信息提交成功/平台正在加速审核”；可查看审核进度或继续上品。</td><td><span class="badge confirmed">提交成功，未审核通过</span></td></tr>
+      <tr><td>E-O1</td><td><a href="https://apps.apple.com/cn/app/%E6%8A%96%E9%9F%B3%E6%9D%A5%E5%AE%A2/id1603172928">官方 App 信息</a></td><td>抖音来客定位为生活服务商家经营平台，覆盖门店、团购、营销、数据分析、交易提现。</td><td><span class="badge confirmed">官方资料</span></td></tr>
+      <tr><td>E-O2</td><td><a href="https://lf26-cdn-tos.draftstatic.com/obj/ies-hotsoon-draft/life-service/aa07da40-be79-40b5-99e8-64b13d8e98e1.html">商户合作协议</a></td><td>确认商户账户、门店/营销商品管理、经营数据分析、审核责任，以及独立的商家智能客服定义和能力。</td><td><span class="badge confirmed">官方协议</span></td></tr>
+      <tr><td>E-O3</td><td><a href="https://partner.open-douyin.com/docs/resource/zh-CN/thirdparty/overview/businessintroduction/livingService">开放平台文档</a></td><td>代金券/团购套餐可通过短视频、直播、POI 展示，引导线上购买、线下核销。</td><td><span class="badge confirmed">官方文档</span></td></tr>
+    </tbody></table></div>
+    <div class="callout"><b>证据缺口：</b>没有首次进入路径、账号/权限配置、人工输入自由文本、审核结果、审核驳回、工具错误、余额/费用、历史版本、知识库、真实消费者客服会话、模型选择器或模型名称。上述对象均不能写成现状事实。</div>
+  </section>
+
+  <section id="domains"><div class="eyebrow">02 · Product domains</div><h2>核心功能域</h2><div class="grid">
+    <div class="card"><span class="badge confirmed">已确认</span><h3>经营洞察</h3><p>周报/月报、成交/核销/退款、客单价、访问成交转化率、排名和商品TOP3。</p></div>
+    <div class="card"><span class="badge confirmed">已确认</span><h3>经营建议</h3><p>暑期指南、同行爆品、基于同品类商家热销情况给出参数建议。</p></div>
+    <div class="card"><span class="badge confirmed">已确认</span><h3>商品上新</h3><p>面额/实付、名称、展示图、详情、提交审核、审核进度和继续创建。</p></div>
+    <div class="card"><span class="badge confirmed">已确认</span><h3>对话式工作台</h3><p>消息、快捷任务、结构化表单、语音输入、停止流程、返回、聊新话题。</p></div>
+    <div class="card"><span class="badge inferred">部分确认</span><h3>经营托管</h3><p>入口可见，但没有进入后的页面、权限、自动化范围或执行结果。</p></div>
+    <div class="card"><span class="badge unknown">未知</span><h3>消费者智能客服</h3><p>官方协议确认该能力存在，但这 8 张截图没有展示知识库、自动答复或消费者会话。</p></div>
+  </div></section>
+
+  <section id="journey"><div class="eyebrow">03 · User journey</div><h2>用户旅程与证据表</h2><div class="table-wrap"><table><thead><tr><th>阶段</th><th>用户目标</th><th>用户动作</th><th>页面反馈</th><th>用户决定</th><th>状态变化</th><th>阻力</th><th>证据</th></tr></thead><tbody>
+    <tr><td>进入助手</td><td>快速了解店铺经营与下一步</td><td>浏览推荐卡和快捷入口</td><td>问候、经营指南、月报、上新、脚本</td><td>选洞察/上品/托管/自由提问</td><td>未看到写入</td><td>入口多但优先级依据不透明</td><td>E-01</td></tr>
+    <tr><td>查看策略</td><td>找到暑期增长动作</td><td>打开暑期经营指南</td><td>展示同行爆品与“去上线”</td><td>关闭/去上线</td><td>进入上新路径（承接推断）</td><td>“同行”定义和数据范围不可见</td><td>E-02</td></tr>
+    <tr><td>查看经营</td><td>判断经营表现</td><td>切换月报/周报</td><td>指标、排名、TOP商品</td><td>继续分析或采取经营动作</td><td>报告期切换</td><td>周报结论与空/零指标冲突</td><td>E-03、E-04</td></tr>
+    <tr><td>配置商品</td><td>快速创建可销售代金券</td><td>进入帮我上品流程</td><td>推荐100面额/98实付并预填</td><td>确认/修改/停止</td><td>生成商品草稿（语义推断）</td><td>推荐理由缺少样本量、区间和收益风险</td><td>E-05</td></tr>
+    <tr><td>确认资料</td><td>保证商品规则可用</td><td>确认价格</td><td>显示名称、展示图、详情、提交审核</td><td>查看详情/提交/停止</td><td>从参数确认进入资料确认</td><td>规则提示抽象，核心使用限制未同屏摘要</td><td>E-06</td></tr>
+    <tr><td>提交审核</td><td>让商品进入平台审核</td><td>确认提交</td><td>提交成功，平台审核中</td><td>看进度/继续上品/聊新话题</td><td>under_review</td><td>“加速审核”没有预计时间或SLA</td><td>E-07</td></tr>
+  </tbody></table></div>
+    <h3>三泳道旅程图</h3><div class="journey" aria-label="三泳道用户旅程">
+      <div class="lane">用户</div><div class="node"><strong>想知道店铺近况</strong><small>进入店长情报速递</small><div class="emotion">期待</div></div><div class="node"><strong>查看策略和报告</strong><small>指南 / 月报 / 周报</small><div class="emotion">探索</div></div><div class="node decision"><strong>是否采纳爆品建议？</strong><small>去上线 / 关闭</small><div class="emotion">犹豫</div></div><div class="node decision"><strong>参数是否合适？</strong><small>确认 / 修改 / 停止</small><div class="emotion">风险判断</div></div><div class="node decision"><strong>资料是否准确？</strong><small>详情 / 提交审核</small><div class="emotion">谨慎</div></div><div class="node"><strong>等待审核</strong><small>查进度或继续上品</small><div class="emotion">不确定</div></div>
+      <div class="lane">产品界面</div><div class="node"><strong>入口聚合</strong><small>卡片、快捷按钮、语音输入</small></div><div class="node"><strong>经营可视化</strong><small>指标、排名、TOP商品</small></div><div class="node"><strong>同行爆品卡</strong><small>单一 CTA“去上线”</small></div><div class="node"><strong>结构化表单</strong><small>100元 / 98元预填</small></div><div class="node"><strong>二次确认卡</strong><small>名称、图片、详情、审核</small></div><div class="node"><strong>成功卡</strong><small>审核进度和后续动作</small></div>
+      <div class="lane">系统结果</div><div class="node"><strong>展示商家上下文</strong><small>门店/经营数据可见</small></div><div class="node"><strong>生成报告</strong><small>周报存在语义冲突</small></div><div class="node"><strong>形成上新意图</strong><small>触发关系为合理推断</small></div><div class="node"><strong>创建/更新草稿</strong><small>字段名与存储未知</small></div><div class="node"><strong>提交审核任务</strong><small>用户明确确认</small></div><div class="node"><strong>under_review</strong><small>通过/驳回尚未观察</small></div>
+    </div>
+    <div class="grid two"><div class="card"><h3>修改与中断</h3><ul><li>参数表单可编辑后确认。</li><li>“停止当前流程”在 S63–S65 可见。</li><li>顶部返回按钮全程可见。</li><li>S66 可“聊聊新话题”或继续不同上品路径。</li></ul></div><div class="card"><h3>失败路径缺口</h3><ul><li>未观察价格校验失败、图片不合规、提交失败。</li><li>未观察审核驳回及修改重提。</li><li>未观察网络中断、重复点击、权限不足或余额不足。</li><li>不能确认停止后是否撤销草稿或后台任务。</li></ul></div></div>
+  </section>
+
+  <section id="agents"><div class="eyebrow">04 · Agent contracts</div><h2>可观察 Agent 清单与契约</h2><p class="lead">只记录一个页面有证据的身份：“智能助手/店长情报速递”。“暑期经营指南”“经营托管”“帮我上品”按页面形态更像能力入口或工作流，不作为独立 Agent。没有证据支持主控 Agent、报表 Agent、商品 Agent 等官方身份。</p>
+    <div class="grid"><div class="card"><span class="badge confirmed">唯一具名身份</span><h3>智能助手 / 店长情报速递</h3><p>首次出现于 S59；由商家进入页面触发。它展示经营洞察、推荐行动，并在上新流程里接收确认和呈现状态。</p></div><div class="card"><span class="badge inferred">能力模式</span><h3>经营分析</h3><p>周报/月报和指标解读可见，但是否由单独 Agent、规则引擎或报表服务生成未知。</p></div><div class="card"><span class="badge inferred">能力模式</span><h3>帮我上品</h3><p>推荐参数、表单、二次确认和提交审核构成完整链路；作为 Stage 3 的目标行为。</p></div></div>
+    <h3>I/O 契约卡：智能助手</h3><div class="table-wrap"><table><thead><tr><th>契约项</th><th>可观察内容</th><th>证据等级</th><th>证据</th></tr></thead><tbody>
+      <tr><td>核心目标</td><td>以对话+卡片帮助本地商家理解经营并完成商品配置与审核提交。</td><td><span class="badge confirmed">已确认</span></td><td>E-01–E-07</td></tr>
+      <tr><td>触发</td><td>进入店长情报页、点击指南/报告/帮我上品，或进行确认。</td><td><span class="badge confirmed">部分确认</span></td><td>E-01、E-05–E-07</td></tr>
+      <tr><td>用户当前输入</td><td>表单值与两次确认消息可见；没有自由文本样本。</td><td><span class="badge confirmed">已确认</span></td><td>E-05–E-07</td></tr>
+      <tr><td>用户长期信息</td><td>门店名和经营指标存在；账号角色、权限、长期偏好不可见。</td><td><span class="badge confirmed">仅存在性</span></td><td>E-03、E-04</td></tr>
+      <tr><td>项目/任务上下文</td><td>当前报告期、当前上新步骤、代金券参数、名称和展示图在页面连续出现。</td><td><span class="badge inferred">行为支持</span></td><td>E-03–E-07</td></tr>
+      <tr><td>平台知识</td><td>页面明确称参考“平台同品类商家的热销情况”，并要求核对代金券规则。</td><td><span class="badge confirmed">内容可见</span></td><td>E-05、E-06</td></tr>
+      <tr><td>运行时结果</td><td>提交成功和审核中可见；审核通过/失败不可见。</td><td><span class="badge confirmed">已确认</span></td><td>E-07</td></tr>
+      <tr><td>完成条件</td><td>本样本只完成“提交审核”，没有完成“审核通过/商品上线”。</td><td><span class="badge confirmed">边界确认</span></td><td>E-07</td></tr>
+    </tbody></table></div>
+    <h3>功能工具表</h3><div class="table-wrap"><table><thead><tr><th>功能工具（非官方名）</th><th>输入/前置</th><th>可见结果</th><th>执行结论</th><th>证据</th></tr></thead><tbody>
+      <tr><td>读取经营报告</td><td>门店+报告期</td><td>月报/周报与指标</td><td><span class="badge confirmed">结果存在</span></td><td>E-03、E-04</td></tr>
+      <tr><td>生成经营摘要</td><td>报告指标</td><td>“核销金额有所回落”“本周业绩稳定”等文案</td><td><span class="badge inferred">生成方式未知</span></td><td>E-03、E-04</td></tr>
+      <tr><td>推荐代金券参数</td><td>同品类热销情况（页面声称）</td><td>100面额/98实付</td><td><span class="badge confirmed">推荐可见</span></td><td>E-05</td></tr>
+      <tr><td>创建/更新商品草稿</td><td>价格确认、名称、展示图</td><td>页面从价格表单转为商品资料卡</td><td><span class="badge inferred">状态变化支持</span></td><td>E-05、E-06</td></tr>
+      <tr><td>提交商品审核</td><td>用户明确确认+资料完整</td><td>代金券/商品信息提交成功</td><td><span class="badge confirmed">已执行</span></td><td>E-07</td></tr>
+      <tr><td>查询审核进度</td><td>已提交任务</td><td>仅“查看审核进度”入口</td><td><span class="badge unknown">未执行</span></td><td>E-07</td></tr>
+      <tr><td>停止当前流程</td><td>用户点击停止</td><td>按钮可见</td><td><span class="badge unknown">传播结果未见</span></td><td>E-05、E-06</td></tr>
+    </tbody></table></div>
+  </section>
+
+  <section id="context"><div class="eyebrow">05 · Context audit</div><h2>全局上下文字段证据审计</h2><p class="lead">对象名称是分析语义，不代表真实字段或数据表。存在、值、写入、读取和下游消费分别判断。</p><div class="filters" role="group" aria-label="证据筛选"><button class="filter" data-filter="all" aria-pressed="true">全部</button><button class="filter" data-filter="confirmed" aria-pressed="false">已确认</button><button class="filter" data-filter="inferred" aria-pressed="false">推断</button><button class="filter" data-filter="unknown" aria-pressed="false">未知</button><button class="filter" data-filter="recommended" aria-pressed="false">建议</button></div>
+    <div class="table-wrap"><table id="field-table"><thead><tr><th>候选对象</th><th>存在/值</th><th>写证据</th><th>读/消费证据</th><th>结论</th></tr></thead><tbody>
+      <tr data-class="confirmed"><td>Merchant / Store</td><td>“镇安超市”可见</td><td>本样本未写</td><td>月报/周报按门店展示</td><td><span class="badge confirmed">存在与页面消费确认</span></td></tr>
+      <tr data-class="confirmed"><td>ReportPeriod</td><td>07/01–07/31、08/10–08/16</td><td>用户切换周/月报</td><td>指标随周期变化</td><td><span class="badge confirmed">读写行为确认</span></td></tr>
+      <tr data-class="confirmed"><td>BusinessMetrics</td><td>成交/核销/退款/客单价/转化率/排名/TOP商品</td><td>来源写入不可见</td><td>报告文案与图表使用</td><td><span class="badge confirmed">值可见，生产者未知</span></td></tr>
+      <tr data-class="confirmed"><td>VoucherParameters</td><td>面额100、实付98</td><td>表单预填并经用户确认</td><td>下游商品资料卡承接</td><td><span class="badge confirmed">链路确认</span></td></tr>
+      <tr data-class="confirmed"><td>ProductInfo</td><td>名称“100元代金券”、展示图</td><td>来源未见；确认后提交</td><td>审核提交结果消费</td><td><span class="badge confirmed">值与下游确认</span></td></tr>
+      <tr data-class="inferred"><td>WorkflowState</td><td>配置→价格确认→资料确认→提交成功→审核中</td><td>页面随动作变化</td><td>可用按钮依赖阶段</td><td><span class="badge inferred">语义状态机</span></td></tr>
+      <tr data-class="confirmed"><td>UserConfirmation</td><td>两条“已确认…”消息</td><td>用户动作生成</td><td>触发下一个页面状态</td><td><span class="badge confirmed">存在/写/消费确认</span></td></tr>
+      <tr data-class="confirmed"><td>ReviewStatus</td><td>“提交成功”“平台正在加速审核”</td><td>提交后出现</td><td>“查看审核进度”入口依赖</td><td><span class="badge confirmed">under_review确认</span></td></tr>
+      <tr data-class="unknown"><td>ModelConfig</td><td>无模型名、版本、参数</td><td>不可见</td><td>不可见</td><td><span class="badge unknown">未知</span></td></tr>
+      <tr data-class="unknown"><td>DraftVersion / History</td><td>未见版本或历史卡</td><td>不可见</td><td>不可见</td><td><span class="badge unknown">不能默认存在</span></td></tr>
+      <tr data-class="recommended"><td>MetricNarrativeValidation</td><td>当前页面未显示该对象</td><td>应由验证服务写入</td><td>报告发布前消费</td><td><span class="badge recommended">解决周报冲突</span></td></tr>
+    </tbody></table></div>
+    <h3>生产者—消费者关系</h3><div class="table-wrap"><table><thead><tr><th>数据</th><th>可见生产者</th><th>消费者</th><th>版本/一致性</th><th>证据结论</th></tr></thead><tbody>
+      <tr><td>经营指标</td><td>未知；页面报告承载</td><td>报告卡、摘要文案、经营建议（后者仅推断）</td><td>周/月两个周期；周报存在摘要冲突</td><td>值确认，数据管道未知</td></tr>
+      <tr><td>代金券参数</td><td>助手推荐+用户表单确认</td><td>商品资料与审核提交</td><td>没有版本号或修改历史</td><td>端到端消费确认</td></tr>
+      <tr><td>商品名称/展示图</td><td>来源未知；页面显示</td><td>提交审核</td><td>确认前可否编辑未知</td><td>下游消费确认</td></tr>
+      <tr><td>审核状态</td><td>平台审核服务（语义推断）</td><td>结果卡、进度入口</td><td>只见提交中间态</td><td>通过/驳回未知</td></tr>
+    </tbody></table></div>
+  </section>
+
+  <section id="prompt"><div class="eyebrow">06 · Functional-equivalent prompt</div><h2>“帮我上品”功能等价 System Prompt</h2><p class="lead">这是基于 E-05–E-07 的行为等价设计，不是抖音来客官方 Prompt。目标是复刻参数推荐、分步确认、商品资料提交与审核交接，不还原隐藏思维链或官方工具名。</p>
+    <h3>状态机</h3><pre aria-label="商品上新 Agent 状态机 Mermaid 源码">stateDiagram-v2
+  [*] --> waiting_intent
+  waiting_intent --> recommending: 用户选择帮我上品/去上线
+  recommending --> waiting_price_confirm: 生成可编辑价格建议
+  waiting_price_confirm --> recommending: 用户修改参数
+  waiting_price_confirm --> interrupted: 停止当前流程
+  waiting_price_confirm --> preparing_draft: 用户确认价格
+  preparing_draft --> waiting_product_confirm: 名称+图片+规则已准备
+  waiting_product_confirm --> preparing_draft: 用户要求修改
+  waiting_product_confirm --> interrupted: 停止当前流程
+  waiting_product_confirm --> submitting: 用户确认提交审核
+  submitting --> under_review: 提交结果成功
+  submitting --> failed: 工具/校验/写入失败
+  under_review --> approved: 审核通过（未观察）
+  under_review --> rejected: 审核驳回（未观察）
+  rejected --> preparing_draft: 修订后重提（建议）</pre>
+    <details class="prompt-box" open><summary><span>可直接使用的 System Prompt（非官方原文）</span><button class="copy" id="copy-prompt" type="button">复制 Prompt</button></summary><pre id="prompt-text">Agent 名称：本地生活商品上新助手（行为等价设计）
+
+1. 角色
+你是面向本地生活商家的商品上新助手。你将经营建议转化为可编辑的团购套餐或代金券草稿，通过分步确认完成资料准备，并把已确认商品提交平台审核。
+
+2. 核心目标
+降低商家创建营销商品的操作成本，同时保证价格、名称、图片、使用规则和适用门店可核验；未经用户确认不得提交审核。
+
+3. 任务边界
+- 允许：读取当前商家和门店可见信息、读取同品类聚合参考、推荐商品参数、创建或更新草稿、展示详情、提交审核、查询审核状态。
+- 禁止：保证销量或审核通过；虚构同行数据；自动提交审核；绕过平台规则；未经确认覆盖已有商品；把“提交成功”说成“已上线”。
+- 价格、门店、规则、图片、权限或必要资质缺失时必须停止并提示。
+
+4. 输入契约
+- 必填：&lt;merchant_ref&gt;、&lt;store_ref&gt;、&lt;product_type&gt;、&lt;face_value&gt;、&lt;sale_price&gt;、&lt;product_name&gt;、&lt;display_image_ref&gt;、&lt;usage_rules&gt;。
+- 可选：&lt;peer_benchmark&gt;、&lt;campaign_context&gt;、&lt;merchant_edit&gt;。
+- 运行时：&lt;validation_result&gt;、&lt;submission_result&gt;、&lt;review_status&gt;、&lt;user_confirmation&gt;、&lt;interrupt_event&gt;。
+以上为语义设计字段，不代表平台真实字段名；读取前先确认对象存在和当前值。
+
+5. 全局上下文协议
+- 只读取当前商家有权限的门店、经营摘要、当前商品草稿和当前会话确认记录。
+- 只写当前草稿、工作流状态、确认记录、提交结果引用和错误摘要。
+- 禁止修改原始经营数据、审核结果和其他门店商品。
+- 用户修改价格/名称/图片/规则时创建新草稿版本；旧版本保留为历史（建议设计）。
+
+6. 工作流程
+1) 识别用户的上新意图和商品类型。
+2) 若使用同行数据，说明数据口径、样本范围、时间区间和推荐不构成收益保证；缺少这些信息时标记为有限依据。
+3) 生成可编辑的面额与售价建议，说明优惠率和主要经营风险，进入 waiting_price_confirm。
+4) 用户修改则重新校验；用户确认后记录 confirmation_id，再准备名称、展示图和使用规则。
+5) 展示提交前摘要，允许查看详情、修改或停止，进入 waiting_product_confirm。
+6) 只有用户明确确认“提交审核”且全部校验通过时，调用提交工具。
+7) 工具成功后验证审核任务引用和页面状态存在，写入 under_review；不得声称审核通过或商品上线。
+
+7. 工具调用规范
+- &lt;读取经营与同品类参考&gt;：返回可追溯聚合结果；不得返回其他商家私有明细。
+- &lt;创建或更新商品草稿&gt;：使用 idempotency_key；写入成功后回读关键字段。
+- &lt;校验商品规则&gt;：检查面额、售价、名称、图片、适用门店、使用限制、资质和平台规则。
+- &lt;提交商品审核&gt;：需要有效 confirmation_id、草稿版本和校验通过结果；成功应返回 review_task_ref。
+- &lt;查询审核状态&gt;：只读；返回 under_review/approved/rejected 等可见状态和原因。
+工具名均为功能名称，不是官方函数名。重试次数未知；任何建议重试必须幂等且遵循平台策略。
+
+8. 用户确认机制
+- 第一次确认：面额与售价。
+- 第二次确认：商品名称、图片、规则和提交审核。
+- 用户点击停止时进入 interrupted；未看到继续指令前不得调用提交工具。
+
+9. 结果验证
+检查草稿关键字段与页面摘要一致；展示图实际存在；价格关系合法；规则完整；用户确认记录属于当前草稿版本；提交结果含审核任务引用；页面状态与工具结果一致。任何一项失败都不得输出“提交成功”。
+
+10. 修改与回退
+价格变化使旧价格确认失效；名称、图片或规则变化使提交确认失效。修改只重做依赖步骤，不重复读取无关经营数据。不得覆盖已提交审核的版本，应创建修订版本。
+
+11. 异常处理
+- 输入缺失或校验失败：指出具体字段并停在相应确认状态。
+- 工具失败/状态写入失败：记录错误并停在 failed，不宣称提交。
+- 审核驳回：展示官方原因，允许定向修订后重新确认。
+- 用户中断：停止未开始的工具调用，保存可恢复草稿。
+- 重复提交：使用幂等键返回已有审核任务，避免重复商品。
+- 安全或合规拦截：原样说明可见原因，不猜测随机误判。
+
+12. 状态机
+允许状态：waiting_intent、recommending、waiting_price_confirm、preparing_draft、waiting_product_confirm、submitting、under_review、approved、rejected、failed、interrupted。每次只能有一个主状态。
+
+13. 下游交接
+向审核服务交接：商家/门店引用、商品类型、当前草稿版本、所有已确认字段、规则校验结果、用户确认记录、资产引用和未解决问题。
+
+14. 完成条件
+本 Agent 的“提交完成”必须同时满足：资料完整、校验通过、两次确认有效、提交工具成功、审核任务真实存在、状态写入成功、用户能查看进度。审核通过与商品上线属于后续状态。
+
+15. 输出格式
+推荐阶段：推荐值 / 依据与局限 / 可编辑表单 / 确认或停止。
+提交前：商品摘要 / 规则摘要 / 风险提示 / 查看详情 / 确认提交。
+提交后：审核任务状态 / 可查询入口 / 下一步；明确区分“已提交”“审核通过”“已上线”。
+
+16. 表达要求
+使用商家界面语言，短句、明确动作、避免保证性营销。只提供可审计的判断摘要，不输出隐藏思维链。</pre></details>
+    <h3>规则追溯与最小测试</h3><div class="table-wrap"><table><thead><tr><th>规则/测试</th><th>依据或输入</th><th>预期行为</th><th>禁止行为</th></tr></thead><tbody>
+      <tr><td>两次确认门</td><td>E-05–E-07</td><td>价格确认后才展示资料；资料确认后才提交</td><td>自动提交审核</td></tr>
+      <tr><td>完成状态分层</td><td>E-07</td><td>输出“提交成功/审核中”</td><td>说“审核通过/已上线”</td></tr>
+      <tr><td>正常输入</td><td>字段完整、校验通过</td><td>两次确认→提交→under_review</td><td>跳过规则校验</td></tr>
+      <tr><td>缺少图片</td><td>display_image_ref为空</td><td>请求用户上传合规图片</td><td>用不存在的图片提交</td></tr>
+      <tr><td>局部改价</td><td>100/98改为100/95</td><td>失效旧价格与提交确认，局部重算</td><td>沿用旧确认</td></tr>
+      <tr><td>工具失败</td><td>提交接口失败</td><td>failed；记录错误；幂等重试</td><td>显示提交成功或创建重复商品</td></tr>
+      <tr><td>用户中断</td><td>waiting_product_confirm点击停止</td><td>interrupted；保留可恢复草稿（建议）</td><td>后台继续提交</td></tr>
+      <tr><td>页面/工具冲突</td><td>工具成功但页面仍显示草稿</td><td>标记 conflict，回读审核任务</td><td>只相信聊天文案</td></tr>
+      <tr><td>审核驳回</td><td>rejected+原因</td><td>展示原因、定向修改、重新确认</td><td>自动覆盖并重提</td></tr>
+    </tbody></table></div>
+  </section>
+
+  <section id="models"><div class="eyebrow">07 · Models & knowledge</div><h2>模型、知识与规则架构</h2><div class="alert"><b>先说结论：</b>抖音来客属于字节跳动生态，而火山方舟官方提供豆包 Seed 文本/工具调用与 Seedream 图像生成能力，所以“字节系模型栈是优先候选”属于<b>合理推断</b>；但当前页面和官方资料没有把这个智能助手映射到某个豆包模型或版本，因此“它正在使用 doubao-seed-2.0 / Seedream 4.5”仍是<b>未知</b>，不能写成现网事实。</div>
+    <div class="table-wrap"><table><thead><tr><th>能力/信息</th><th>当前证据</th><th>可能作用</th><th>模型或实现结论</th></tr></thead><tbody>
+      <tr><td>经营摘要生成</td><td>月报/周报含自然语言结论</td><td>把指标转成商家可读叙事</td><td><span class="badge inferred">规则模板或语言模型均可能</span></td></tr>
+      <tr><td>代金券参数推荐</td><td>页面称参考同品类热销情况</td><td>从经营/同行信息到价格建议</td><td><span class="badge inferred">推荐/规则/模型组合未知</span></td></tr>
+      <tr><td>对话与表单编排</td><td>消息、表单、确认、状态卡连续出现</td><td>意图识别与工作流推进</td><td><span class="badge inferred">Agent/状态机合理推断</span></td></tr>
+      <tr><td>消费者智能客服</td><td>官方协议确认知识库、关键词、AI问答、7×24、话术推荐</td><td>回答消费者咨询</td><td><span class="badge confirmed">能力确认；与本助手关系未知</span></td></tr>
+      <tr><td>基础模型</td><td>无模型选择器或官方映射</td><td>语言理解与生成</td><td><span class="badge unknown">厂商/名称/版本未知</span></td></tr>
+      <tr><td>图片模型</td><td>展示图存在，但来源不可见</td><td>商品视觉资产</td><td><span class="badge unknown">不能确认AI生成</span></td></tr>
+    </tbody></table></div>
+    <h3>“一个模型完成全部”的错觉</h3><div class="table-wrap"><table><thead><tr><th>页面能力</th><th>更可靠的实现分工</th><th>原因</th><th>结论</th></tr></thead><tbody>
+      <tr><td>理解用户、连续沟通</td><td>对话 LLM + 会话上下文</td><td>需要意图理解、追问与解释</td><td><span class="badge inferred">语言模型合理推断</span></td></tr>
+      <tr><td>生成商品主图</td><td>专用图像模型 + 规则校验 + 资产存储</td><td>对话模型只应编排任务，图像模型才输出像素</td><td><span class="badge unknown">本次主图是否 AI 生成未知</span></td></tr>
+      <tr><td>通过文字给出链接/卡片结构</td><td>LLM 产生受 JSON Schema 约束的动作意图；业务服务校验权限后创建实体、状态和可点击链接</td><td>模型不应自行伪造 URL、商品 ID 或审核状态</td><td><span class="badge recommended">结构化输出 + 确定性工具</span></td></tr>
+      <tr><td>提交审核/查看进度</td><td>商品、权限、审核与状态服务</td><td>是不可依赖模型文案的真实业务事实</td><td><span class="badge confirmed">页面有提交与审核中状态</span></td></tr>
+    </tbody></table></div>
+    <h3>如果你要做同类产品：开/闭源模型候选</h3><p class="lead">下表是【建议设计】，不是 OiiOii/抖音来客的现网模型清单。版本按 2026-08-18 各厂商官方资料记录，上线前应重新查询模型目录并固定精确版本。</p><div class="table-wrap"><table><thead><tr><th>候选模型</th><th>开放形式</th><th>适合任务</th><th>主要好处</th><th>需验证/代价</th><th>官方依据</th></tr></thead><tbody>
+      <tr><td>Doubao Seed 2.0 系列</td><td>闭源 API</td><td>中文对话、意图理解、Function Calling、表单编排</td><td>字节系生态优先候选；火山方舟已公开 Responses API 工具调用示例</td><td>需实测复杂工具成功率、延迟、价格与账号地域；不能因厂商同属就确认现网在用</td><td><a href="https://www.volcengine.com/docs/82379/1958524?lang=zh">火山方舟工具调用</a></td></tr>
+      <tr><td>Doubao Seedream 4.5</td><td>闭源 API</td><td>主图生成、参考图改图、组图</td><td>官方支持文生图、图生图、多参考图和 URL/base64 输出</td><td>需平台规则校验、文字可读性与商业素材安全评测</td><td><a href="https://www.volcengine.com/docs/6492/2221472?lang=zh">Seedream 官方文档</a></td></tr>
+      <tr><td>OpenAI GPT-5 系列（官方目录当前展示 gpt-5.6）</td><td>闭源 API</td><td>对话、工具选择、严格结构化输出</td><td>Responses API、Function Calling 和 strict JSON Schema 适合把语言转成可校验动作</td><td>需中文业务评测、合规/数据地域评估和成本控制</td><td><a href="https://platform.openai.com/docs/quickstart/make-your-first-api-request">OpenAI API 快速入门</a></td></tr>
+      <tr><td>GPT Image 1.5</td><td>闭源 API</td><td>主图、文字渲染、局部编辑</td><td>官方强调指令遵循、精确编辑和文字渲染</td><td>需按画质/尺寸评估成本，并做平台商品图合规校验</td><td><a href="https://openai.com/index/new-chatgpt-images-is-here/">OpenAI 官方发布</a></td></tr>
+      <tr><td>Gemini 3.6 Flash + Nano Banana 2</td><td>闭源 API</td><td>多模态对话、高吞吐任务、主图生成/编辑</td><td>Flash 面向效率与 Agent 任务；Nano Banana 2 官方强调 4K、多参考图、一致性和文字渲染</td><td>模型别名会变；生产应使用固定 stable ID 而非 latest</td><td><a href="https://ai.google.dev/gemini-api/docs/models">Gemini 模型目录</a></td></tr>
+      <tr><td>Qwen3</td><td>开放权重，Apache 2.0</td><td>中文对话、私有化、工具调用</td><td>多尺寸、思考/非思考模式、官方 Qwen-Agent 工具调用链路</td><td>自建推理、安全、评测和扩容成本；生产需防工具格式漂移</td><td><a href="https://github.com/QwenLM/Qwen3">Qwen3 官方仓库</a></td></tr>
+      <tr><td>FLUX.2 [klein] 4B</td><td>开放权重，Apache 2.0</td><td>主图生成、编辑、多参考图，私有部署</td><td>官方称可在消费级 GPU 上运行，适合快速迭代与定制</td><td>4B 与 9B/Pro 画质要实测；不同版本商用许可不同</td><td><a href="https://github.com/black-forest-labs/flux2">FLUX.2 官方仓库</a></td></tr>
+    </tbody></table></div>
+    <h3>三种可落地组合</h3><div class="grid">
+      <div class="card"><span class="badge recommended">国内快速验证</span><h3>Doubao Seed + Seedream</h3><p>适合中文商家对话与主图生成。仍要把商品链接、价格、权限、审核状态交给确定性服务。</p></div>
+      <div class="card"><span class="badge recommended">高质量 SaaS</span><h3>GPT-5 系列 + GPT Image / Gemini + Nano Banana</h3><p>优先比较严格工具调用成功率、中文营销文案、图片文字正确率、延迟与单任务成本。</p></div>
+      <div class="card"><span class="badge recommended">私有化/数据可控</span><h3>Qwen3 + FLUX.2 Klein</h3><p>适合有 GPU 运维与定制评测能力的团队。监控工具 JSON 合规率、图像合规与模型版本回归。</p></div>
+    </div>
+    <h3>知识分层</h3><div class="grid">
+      <div class="card"><span class="badge confirmed">项目/商家数据</span><h3>经营与商品数据</h3><p>门店、报告期、指标、商品参数、图片与审核状态。不得与平台公共知识混为一体。</p></div>
+      <div class="card"><span class="badge confirmed">平台知识</span><h3>规则与同行聚合</h3><p>代金券规则、审核规范、同品类热销情况和暑期指南；具体版本、更新时间、样本口径未显示。</p></div>
+      <div class="card"><span class="badge recommended">治理知识</span><h3>模型能力与质量</h3><p>应维护模型版本、适用任务、成本、延迟、错误率、叙事一致性评测和规则更新时间。</p></div>
+    </div>
+    <div class="callout"><b>安全与规则位置：</b>价格、资质、图片、审核和提交权限不应只写进 System Prompt，应由确定性校验工具与审核服务强制执行。Prompt 负责解释和编排，工具负责不可绕过的约束。</div>
+  </section>
+
+  <section id="architecture"><div class="eyebrow">08 · Full architecture</div><h2>端到端流转与产品分层</h2>
+    <div class="pipeline"><div class="step"><b>1 经营入口</b><small>卡片/语音/快捷任务</small></div><div class="step"><b>2 洞察读取</b><small>周报/月报/指南</small></div><div class="step"><b>3 行动推荐</b><small>同行爆品/参数</small></div><div class="step"><b>4 参数确认</b><small>100 / 98 可编辑</small></div><div class="step"><b>5 资料确认</b><small>名称/图片/规则</small></div><div class="step"><b>6 提交审核</b><small>明确确认门</small></div><div class="step"><b>7 审核状态</b><small>under_review</small></div></div>
+    <h3>端到端五流表</h3><div class="table-wrap"><table><thead><tr><th>步骤</th><th>用户交互</th><th>Agent 控制</th><th>工具/服务</th><th>数据与状态</th><th>资产/结果</th><th>失败分支</th></tr></thead><tbody>
+      <tr><td>经营洞察</td><td>切周/月报</td><td>展示/解释指标</td><td>读取经营报告（功能名）</td><td>门店+周期+指标</td><td>报告卡</td><td>空数据应说明，不应写“稳定”</td></tr>
+      <tr><td>推荐行动</td><td>去上线/帮我上品</td><td>基于同品类信息推荐</td><td>读取聚合基准（推断）</td><td>商品类型+参考口径</td><td>参数建议</td><td>无可用基准则披露局限</td></tr>
+      <tr><td>价格确认</td><td>编辑并确认</td><td>校验并推进</td><td>更新草稿（推断）</td><td>voucher参数+confirmation</td><td>价格草稿</td><td>非法价格→等待修改</td></tr>
+      <tr><td>资料确认</td><td>看详情/确认提交</td><td>汇总名称、图片、规则</td><td>校验商品规则（建议）</td><td>ProductInfo+资产引用</td><td>提交前摘要</td><td>缺字段/图片不合规→阻塞</td></tr>
+      <tr><td>审核交接</td><td>明确提交</td><td>调用并验证结果</td><td>提交审核</td><td>review task + under_review</td><td>成功卡</td><td>提交失败/状态冲突→failed</td></tr>
+    </tbody></table></div>
+    <h3>九层产品架构</h3><div class="layers">
+      <div class="layer"><strong>1 用户与渠道层</strong><div class="chips"><span class="chip solid">抖音来客 iPhone 商家端</span><span class="chip dash">Web 商户后台（官方能力）</span><span class="chip dotted">多角色/门店权限治理</span></div></div>
+      <div class="layer"><strong>2 交互工作台层</strong><div class="chips"><span class="chip solid">聊天消息</span><span class="chip solid">经营卡片</span><span class="chip solid">周/月报切换</span><span class="chip solid">表单与确认</span><span class="chip solid">停止/返回/语音</span></div></div>
+      <div class="layer"><strong>3 产品应用层</strong><div class="chips"><span class="chip solid">经营分析</span><span class="chip solid">经营指南</span><span class="chip solid">商品上新</span><span class="chip solid">审核进度</span><span class="chip dash">经营托管</span><span class="chip dash">脚本生成</span></div></div>
+      <div class="layer"><strong>4 Agent 与流程层</strong><div class="chips"><span class="chip solid">智能助手（唯一具名）</span><span class="chip dash">商品上新状态机</span><span class="chip dash">意图/能力选择</span><span class="chip dotted">统一完成门</span><span class="chip dotted">确认版本绑定</span></div></div>
+      <div class="layer"><strong>5 工具与服务层</strong><div class="chips"><span class="chip solid">经营报告读取</span><span class="chip solid">商品审核提交</span><span class="chip dash">同行聚合参考</span><span class="chip dash">商品草稿</span><span class="chip dotted">规则校验</span><span class="chip dotted">幂等与取消</span></div></div>
+      <div class="layer"><strong>6 模型接入层</strong><div class="chips"><span class="chip dash">文本理解/生成（未具名）</span><span class="chip dash">推荐/规则组合（未知）</span><span class="chip dotted">模型能力注册表</span><span class="chip dotted">质量与成本路由</span></div></div>
+      <div class="layer"><strong>7 上下文与数据层</strong><div class="chips"><span class="chip solid">门店/周期/指标</span><span class="chip solid">商品参数/图片</span><span class="chip solid">确认/审核状态</span><span class="chip dash">会话/草稿状态</span><span class="chip dotted">版本与依赖</span></div></div>
+      <div class="layer"><strong>8 知识与公共资产层</strong><div class="chips"><span class="chip solid">平台规则</span><span class="chip solid">暑期指南</span><span class="chip solid">同品类聚合参考</span><span class="chip dash">商品模板</span><span class="chip dotted">知识版本与作用域</span></div></div>
+      <div class="layer"><strong>9 基础设施与治理层</strong><div class="chips"><span class="chip dash">身份与租户隔离</span><span class="chip dash">结构化数据/媒体存储</span><span class="chip dash">异步审核任务</span><span class="chip dotted">审计追踪</span><span class="chip dotted">安全/隐私/失败告警</span></div></div>
+    </div>
+    <p><span class="badge confirmed">实线：已确认</span> <span class="badge inferred">虚线：合理推断</span> <span class="badge recommended">点线：建议设计</span></p>
+    <h3>代表性时序图</h3><pre aria-label="商品上新时序图 Mermaid 源码">sequenceDiagram
+  actor U as 商家
+  participant UI as 来客工作台
+  participant A as 智能助手
+  participant R as 经营/同行数据服务（推断）
+  participant W as 工作流状态（推断）
+  participant P as 商品草稿服务（推断）
+  participant G as 规则校验（建议）
+  participant V as 平台审核服务（语义推断）
+  U->>UI: 选择去上线/帮我上品
+  UI->>A: 上新意图+当前门店
+  A->>R: 读取同品类聚合参考
+  R-->>A: 推荐依据（口径未展示）
+  A-->>UI: 100元面额/98元实付表单
+  U->>UI: 修改或确认价格
+  UI->>W: 写价格确认
+  A->>P: 创建/更新商品草稿
+  P-->>UI: 名称+展示图+详情
+  U->>UI: 查看详情/确认提交/停止
+  alt 确认提交
+    UI->>G: 校验价格、规则、图片、权限
+    G-->>A: 通过/失败
+    A->>V: 提交当前草稿版本+确认记录
+    V-->>A: review_task_ref / under_review
+    A->>W: 状态更新
+    UI-->>U: 提交成功，可查审核进度
+  else 停止
+    UI->>W: interrupted（后台传播未知）
+  else 校验失败
+    UI-->>U: 指出字段并等待修改（建议）
+  end</pre>
+    <h3>产品全景架构主图</h3><pre aria-label="产品全景架构 Mermaid 源码">flowchart TB
+  subgraph L1[1 用户与渠道层]
+    U[商家] -->|调用| APP[抖音来客 App]
+  end
+  subgraph L2[2 交互工作台层]
+    APP -->|事件| CHAT[消息/快捷入口]
+    APP -->|确认| FORM[表单/双确认门]
+    APP -->|调用| REPORT[周报/月报/指南]
+  end
+  subgraph L3[3 应用层]
+    REPORT -->|读取| INSIGHT[经营洞察]
+    CHAT -->|调用| LISTING[商品上新]
+    FORM -->|状态更新| REVIEWUI[审核进度]
+  end
+  subgraph L4[4 Agent与编排]
+    LISTING -->|调用| AGENT[智能助手]
+    AGENT -.->|推断:状态更新| WF[上新工作流]
+    WF -.->|建议:完成门| GATE[结果/确认/状态校验]
+  end
+  subgraph L5[5 工具服务]
+    AGENT -->|读取| METRIC[经营报告]
+    AGENT -.->|读取| PEER[同品类聚合参考]
+    WF -.->|写入| DRAFT[商品草稿]
+    GATE -.->|建议:调用| RULE[规则校验]
+    GATE -->|调用| REVIEW[提交审核]
+  end
+  subgraph L6[6 模型层]
+    AGENT -.->|推断:调用| LLM[文本/意图模型 未具名]
+    AGENT -.->|推断:调用| REC[推荐/规则组合 未知]
+  end
+  subgraph L7[7 数据与上下文]
+    METRIC -->|读取| BIZ[(门店/经营指标)]
+    DRAFT -->|写入| PRODUCT[(商品参数/图片)]
+    REVIEW -->|状态更新| STATE[(确认/审核状态)]
+  end
+  subgraph L8[8 知识与公共资产]
+    PEER -->|读取| KB[同行聚合/暑期指南]
+    RULE -.->|建议:读取| POLICY[平台规则/审核规范]
+  end
+  subgraph L9[9 基础设施与治理]
+    REVIEW -.->|推断:事件| ASYNC[异步审核]
+    GATE -.->|建议:写入| TRACE[审计/幂等/追踪]
+    SEC[权限/租户/隐私] -.->|建议:约束| BIZ
+  end
+  BAD[当前问题:周报结论与指标冲突] -.->|建议:阻断| GATE
+  %% 实线=已确认；虚线=合理推断；标注“建议”=建议设计。</pre>
+  </section>
+
+  <section id="entities"><div class="eyebrow">09 · Data entities</div><h2>关键数据实体与关系</h2><div class="table-wrap"><table><thead><tr><th>分析实体</th><th>关键内容</th><th>页面证据</th><th>分类</th></tr></thead><tbody>
+    <tr><td>Merchant / Store</td><td>商家与门店范围</td><td>镇安超市；官方账户/门店权限</td><td><span class="badge confirmed">部分确认</span></td></tr>
+    <tr><td>Conversation / Message</td><td>助手消息、用户确认、快捷话题</td><td>E-01、E-05–E-07</td><td><span class="badge confirmed">确认</span></td></tr>
+    <tr><td>BusinessReport / Metric</td><td>周期、经营指标、排名、TOP商品</td><td>E-03、E-04</td><td><span class="badge confirmed">确认</span></td></tr>
+    <tr><td>Agent / AgentRun</td><td>智能助手与一次上新运行</td><td>身份可见；运行实体结构不可见</td><td><span class="badge inferred">身份确认/结构推断</span></td></tr>
+    <tr><td>ProductDraft / Voucher</td><td>面额、实付、名称、图片、规则</td><td>E-05、E-06</td><td><span class="badge inferred">业务对象确认/表名未知</span></td></tr>
+    <tr><td>UserConfirmation</td><td>价格确认、提交确认</td><td>E-06、E-07</td><td><span class="badge confirmed">确认</span></td></tr>
+    <tr><td>ReviewTask</td><td>提交成功、审核中、进度入口</td><td>E-07</td><td><span class="badge inferred">语义实体</span></td></tr>
+    <tr><td>Asset</td><td>商品展示图</td><td>E-06</td><td><span class="badge confirmed">资产存在</span></td></tr>
+    <tr><td>ToolCall / ModelInvocation / Error</td><td>工具、模型和错误记录</td><td>未展示官方记录</td><td><span class="badge unknown">未知</span></td></tr>
+  </tbody></table></div>
+    <pre aria-label="核心实体 ER 图 Mermaid 源码">erDiagram
+  MERCHANT ||--o{ STORE : manages
+  STORE ||--o{ BUSINESS_REPORT : has
+  BUSINESS_REPORT ||--o{ METRIC : contains
+  MERCHANT ||--o{ CONVERSATION : starts
+  CONVERSATION ||--o{ MESSAGE : contains
+  CONVERSATION ||--o{ AGENT_RUN : may_trigger
+  AGENT_RUN ||--o| PRODUCT_DRAFT : may_create
+  PRODUCT_DRAFT ||--o{ ASSET : references
+  PRODUCT_DRAFT ||--o{ USER_CONFIRMATION : requires
+  PRODUCT_DRAFT ||--o| REVIEW_TASK : submits
+  REVIEW_TASK ||--o{ REVIEW_EVENT : records
+%% 业务关系由页面/官方资料支持；实体名、表结构和基数是分析模型，不是官方数据库定义。</pre>
+  </section>
+
+  <section id="as-is"><div class="eyebrow">10 · As-Is / To-Be</div><h2>当前架构与建议架构</h2><div class="grid two"><div class="card"><h3>As-Is｜当前可见</h3><ul><li>经营数据、策略内容和交易动作聚合在同一对话工作台。</li><li>结构化表单嵌入聊天，降低自由文本歧义。</li><li>价格与提交审核分两次确认。</li><li>提交审核有真实页面状态和后续进度入口。</li><li>报告叙事、推荐依据和审核时长透明度不足。</li></ul></div><div class="card"><h3>To-Be｜建议补充</h3><ul><li>报告叙事先过指标一致性校验，空数据不得生成积极结论。</li><li>推荐参数展示样本口径、置信度、优惠率、预计成本和风险。</li><li>确认记录绑定草稿版本；字段修改后自动失效旧确认。</li><li>提交使用幂等键，停止动作向草稿、队列和审核调用传播。</li><li>模型卡展示用途、版本、更新时间、质量和数据边界。</li><li>审核状态提供预计时间、驳回原因和局部修复路径。</li></ul></div></div>
+    <h3>底层能力选型表</h3><div class="table-wrap"><table><thead><tr><th>区域</th><th>需要能力</th><th>可能技术类别</th><th>推荐设计</th><th>为什么不能确认现状</th></tr></thead><tbody>
+      <tr><td>移动工作台</td><td>卡片、表单、消息、状态恢复</td><td>原生/跨端 UI + 事件流</td><td>服务端状态驱动 UI，确认绑定版本</td><td>截图不显示技术栈</td></tr>
+      <tr><td>Agent 编排</td><td>意图、步骤、等待、恢复、中断</td><td>显式状态机/工作流</td><td>有限状态机+可审计动作摘要</td><td>只有页面行为可见</td></tr>
+      <tr><td>经营分析</td><td>周期聚合、对比、排名、空值语义</td><td>指标服务+规则/语言生成</td><td>指标事实层与叙事生成分离</td><td>数据管道与生成方式不可见</td></tr>
+      <tr><td>推荐</td><td>同行聚合、价格建议、解释</td><td>规则/统计/推荐模型</td><td>可解释约束优化，不暴露私有明细</td><td>只看到推荐结果</td></tr>
+      <tr><td>模型接入</td><td>文本理解、生成、路由、版本</td><td>模型网关</td><td>能力注册表+离线评测+版本固定</td><td>模型完全未具名</td></tr>
+      <tr><td>商品与审核</td><td>草稿、规则、提交、异步状态</td><td>业务服务+任务队列</td><td>幂等提交、状态回读、驳回局部修复</td><td>审核后端不可见</td></tr>
+      <tr><td>数据/媒体</td><td>结构化商品与图片版本</td><td>数据库+对象存储/CDN</td><td>版本化引用、租户隔离、生命周期</td><td>厂商和实现不可见</td></tr>
+      <tr><td>治理</td><td>权限、审计、隐私、安全、告警</td><td>策略服务+日志追踪</td><td>merchant/store/draft/review统一 trace_id</td><td>页面未显示治理基础设施</td></tr>
+    </tbody></table></div>
+  </section>
+
+  <section id="risks"><div class="eyebrow">11 · Risks</div><h2>关键风险与体验问题</h2>
+    <div class="risk"><div class="rank">P0</div><div><b>报告结论与指标事实冲突</b><p class="lead">S62 写“本周业绩稳定”，但成交额/核销额为“--”、转化率0、未上榜。若叙事生成没有空值语义和一致性校验，会直接误导经营决策。</p></div></div>
+    <div class="risk"><div class="rank">P0</div><div><b>推荐参数缺少可解释性</b><p class="lead">“参考同品类热销情况”后直接给出100/98，没有样本量、周期、门店类型、置信度、平台费用或利润影响。</p></div></div>
+    <div class="risk"><div class="rank">P0</div><div><b>提交确认可能与草稿版本脱钩</b><p class="lead">页面有两次确认，但没有可见版本号；若确认后字段变化仍沿用旧确认，可能提交用户未确认的价格或图片。</p></div></div>
+    <div class="risk"><div class="rank">P1</div><div><b>“提交成功”易被理解为“已上线”</b><p class="lead">S66 已说明审核中，但“代金券提交成功”视觉权重更高；应持续展示 under_review、预计时间及审核结果。</p></div></div>
+    <div class="risk"><div class="rank">P1</div><div><b>停止流程的后台传播未知</b><p class="lead">按钮可见，但是否终止草稿更新、异步任务或审核调用无证据；重复点击也可能造成重复商品。</p></div></div>
+    <div class="risk"><div class="rank">P1</div><div><b>模型与数据边界不透明</b><p class="lead">没有模型版本、推荐口径、数据更新时间或 AI 生成范围；商家难判断建议可靠性。</p></div></div>
+    <div class="risk"><div class="rank">P1</div><div><b>商家私有数据与同行聚合隔离</b><p class="lead">平台可展示聚合/比较数据，但架构必须防止从推荐或解释中泄露其他商家的私有明细。</p></div></div>
+    <div class="risk"><div class="rank">P2</div><div><b>智能助手与智能客服概念混淆</b><p class="lead">经营助手与消费者客服的服务对象、知识库、权限和风险不同；若产品命名或数据复用边界不清，可能产生错误回答或越权。</p></div></div>
+  </section>
+
+  <section id="trace"><div class="eyebrow">12 · Traceability</div><h2>架构组件—证据追溯</h2><div class="table-wrap"><table><thead><tr><th>组件</th><th>为什么需要</th><th>页面/官方证据</th><th>分类</th><th>置信度</th></tr></thead><tbody>
+    <tr><td>商家工作台</td><td>统一经营洞察和操作</td><td>E-01–E-07；E-O1</td><td><span class="badge confirmed">已确认</span></td><td>高</td></tr>
+    <tr><td>智能助手</td><td>对话式解释与步骤推进</td><td>E-01、E-03、E-04</td><td><span class="badge confirmed">已确认</span></td><td>高</td></tr>
+    <tr><td>商品上新工作流</td><td>参数→资料→审核的状态推进</td><td>E-05–E-07</td><td><span class="badge inferred">行为推断</span></td><td>高</td></tr>
+    <tr><td>经营报告服务</td><td>生成周/月指标</td><td>E-03、E-04</td><td><span class="badge inferred">服务语义推断</span></td><td>中高</td></tr>
+    <tr><td>同行聚合参考</td><td>支持推荐参数</td><td>E-05 页面原文；官方协议允许聚合/比较数据</td><td><span class="badge confirmed">能力/输入确认</span></td><td>中高</td></tr>
+    <tr><td>商品草稿</td><td>承载参数、名称、图片和修改</td><td>E-05、E-06 状态承接</td><td><span class="badge inferred">合理推断</span></td><td>中</td></tr>
+    <tr><td>审核服务</td><td>提交并返回审核状态</td><td>E-07；官方信息发布审核条款</td><td><span class="badge inferred">语义组件</span></td><td>高</td></tr>
+    <tr><td>文本/意图模型</td><td>支持自然语言交互</td><td>“内容由AI生成”；具体实现未见</td><td><span class="badge inferred">合理推断</span></td><td>中</td></tr>
+    <tr><td>基础模型版本</td><td>评估能力、风险和成本</td><td>没有页面/官方映射</td><td><span class="badge unknown">未知</span></td><td>低</td></tr>
+    <tr><td>叙事一致性校验</td><td>阻止空指标产生错误经营结论</td><td>E-04 冲突</td><td><span class="badge recommended">建议设计</span></td><td>高</td></tr>
+    <tr><td>确认版本绑定/幂等</td><td>避免错版与重复提交</td><td>两次确认与提交链路</td><td><span class="badge recommended">建议设计</span></td><td>高</td></tr>
+  </tbody></table></div>
+    <h3>官方来源</h3><ol class="source-list">
+      <li><a href="https://apps.apple.com/cn/app/%E6%8A%96%E9%9F%B3%E6%9D%A5%E5%AE%A2/id1603172928">抖音来客 App 官方信息</a>：本地商家经营平台，覆盖门店、团购、营销、数据分析和交易。</li>
+      <li><a href="https://lf26-cdn-tos.draftstatic.com/obj/ies-hotsoon-draft/life-service/aa07da40-be79-40b5-99e8-64b13d8e98e1.html">抖音生活服务平台商户合作协议</a>：商户账户和门店/商品/数据管理、信息审核、同行聚合数据，以及商家智能客服的知识库、AI问答、7×24和风险责任。</li>
+      <li><a href="https://partner.open-douyin.com/docs/resource/zh-CN/thirdparty/overview/businessintroduction/livingService">抖音开放平台—生活服务商家应用</a>：团购套餐/代金券通过短视频、直播、POI 展示，线上购买、线下核销。</li>
+      <li><a href="https://www.douyin.com/shipin/7306931115162519615">抖音来客核心商品上架教程</a>：商品字段、图片、渠道、库存、日期、消费限制和提交审核的官方操作说明。</li>
+      <li><a href="https://lf3-cdn-tos.draftstatic.com/obj/ies-hotsoon-draft/lifeservice-legal/c59c0993-b0d8-4a45-93eb-17619b6a9b9f.html">抖音生活服务算法公示</a>：确认消费者侧商家/商品推荐与搜索算法的公开原理；不作为本经营助手模型的直接证据。</li>
+      <li><a href="https://www.volcengine.com/docs/82379/1958524?lang=zh">火山方舟—工具调用</a>：确认豆包 Seed 2.0 系列可通过 Responses API 输出 Function Calling；仅支持“字节系可实现”，不确认本助手已使用。</li>
+      <li><a href="https://www.volcengine.com/docs/6492/2221472?lang=zh">Seedream 图像生成文档</a>：确认 Seedream 4.0/4.5 的文生图、图生图、组图和 URL/base64 输出能力。</li>
+      <li><a href="https://platform.openai.com/docs/quickstart/make-your-first-api-request">OpenAI API 官方快速入门</a>、<a href="https://openai.com/index/new-chatgpt-images-is-here/">GPT Image 1.5 官方发布</a>：用于同类产品的闭源替代选型，不是当前产品证据。</li>
+      <li><a href="https://ai.google.dev/gemini-api/docs/models">Gemini 模型目录</a>：用于核对 Gemini 3.6 Flash 与 Nano Banana 2 的当前能力和版本类型。</li>
+      <li><a href="https://github.com/QwenLM/Qwen3">Qwen3 官方仓库</a>、<a href="https://github.com/black-forest-labs/flux2">FLUX.2 官方仓库</a>：用于开放权重/私有部署替代方案，需另行核对具体版本许可。</li>
+    </ol>
+    <h3>仍然无法确认的问题</h3><div class="grid two"><div class="card"><ul><li>智能助手的基础模型厂商、名称、版本、上下文窗口和路由规则。</li><li>经营摘要是模板、规则、LLM 还是混合生成。</li><li>100/98推荐的样本量、时间范围、同品类定义和目标函数。</li><li>展示图由用户、模板还是图像模型生成。</li><li>“经营托管”“生成脚本”的完整行为与权限。</li></ul></div><div class="card"><ul><li>停止流程是否取消所有后台动作。</li><li>草稿版本、确认记录和幂等键是否真实存在。</li><li>审核 SLA、驳回流程、重试和重新提交。</li><li>消费者智能客服与经营智能助手是否共享模型、知识库或会话数据。</li><li>数据库、队列、对象存储、云厂商、后端语言和模型网关实现。</li></ul></div></div>
+  </section>
+  <footer>抖音来客智能助手产品拆解 · 基于可见截图与官方资料 · 不包含隐藏思维链、凭证或未经观察的实现</footer>
+</main>
+<script>
+  const root=document.documentElement,theme=document.getElementById('theme');
+  theme.addEventListener('click',()=>{root.dataset.theme=root.dataset.theme==='dark'?'light':'dark';theme.setAttribute('aria-label',root.dataset.theme==='dark'?'切换到浅色主题':'切换到深色主题')});
+  const buttons=[...document.querySelectorAll('.filter')],rows=[...document.querySelectorAll('#field-table tbody tr')];
+  buttons.forEach(btn=>btn.addEventListener('click',()=>{buttons.forEach(b=>b.setAttribute('aria-pressed','false'));btn.setAttribute('aria-pressed','true');const f=btn.dataset.filter;rows.forEach(row=>row.hidden=f!=='all'&&row.dataset.class!==f)}));
+  const copy=document.getElementById('copy-prompt');copy.addEventListener('click',async e=>{e.preventDefault();try{await navigator.clipboard.writeText(document.getElementById('prompt-text').innerText);copy.textContent='已复制'}catch{copy.textContent='请手动复制'}setTimeout(()=>copy.textContent='复制 Prompt',1800)});
+</script>
+</body>
+</html>
