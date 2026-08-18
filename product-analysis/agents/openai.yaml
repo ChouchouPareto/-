@@ -1,0 +1,5 @@
+interface:
+  display_name: "产品拆解"
+  short_description: "基于页面证据完成四阶段产品与 Agent 架构拆解"
+  brand_color: "#55D9FF"
+  default_prompt: "Use $product-analysis to inspect this product evidence and complete the requested reverse-analysis stage."
