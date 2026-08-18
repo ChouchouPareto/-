@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Manus 产品拆解报告｜证据分级逆向分析</title>
+  <style>
+    :root{--bg:#07090d;--panel:#10141b;--panel2:#171c25;--text:#f5f2ea;--muted:#aeb6c5;--line:#2b3342;--blue:#7db3ff;--green:#58d7a5;--amber:#ffc766;--red:#ff8585;--violet:#b59cff;--shadow:0 18px 50px rgba(0,0,0,.28);--radius:20px;--header:72px}
+    [data-theme="light"]{--bg:#f3f1eb;--panel:#fff;--panel2:#f7f5ef;--text:#191919;--muted:#5e6470;--line:#d7d2c8;--blue:#075ec9;--green:#087a55;--amber:#8a5700;--red:#b32e2e;--violet:#6747bc;--shadow:0 16px 38px rgba(34,30,22,.10)}
+    *{box-sizing:border-box} html{scroll-behavior:smooth;scroll-padding-top:calc(var(--header) + 18px)} body{margin:0;background:var(--bg);color:var(--text);font:16px/1.65 Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif} a{color:var(--blue);text-underline-offset:3px} button,a{cursor:pointer} :focus-visible{outline:3px solid var(--blue);outline-offset:3px}.skip{position:fixed;left:16px;top:-80px;z-index:99;background:var(--text);color:var(--bg);padding:12px 16px;border-radius:10px}.skip:focus{top:12px}
+    header{height:var(--header);position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:28px;padding:0 4vw;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}.brand{font-weight:800;letter-spacing:.02em;white-space:nowrap}.brand small{display:block;font:600 10px/1.1 ui-monospace,monospace;letter-spacing:.16em;color:var(--muted)}nav{display:flex;gap:20px;overflow:auto;margin-left:auto}nav a{color:var(--muted);text-decoration:none;font-size:14px;white-space:nowrap}nav a:hover{color:var(--text)}.theme{min-width:44px;height:44px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);color:var(--text);font-weight:700}
+    main{width:min(1500px,94vw);margin:auto;padding:42px 0 90px}.hero{display:grid;grid-template-columns:1.55fr .75fr;gap:24px}.hero>div,.card,section{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}.hero-main{padding:clamp(28px,4vw,64px)}.eyebrow{font:700 12px/1.2 ui-monospace,monospace;letter-spacing:.15em;color:var(--blue);text-transform:uppercase}.hero h1{font-size:clamp(44px,6.5vw,92px);line-height:.92;letter-spacing:-.055em;margin:25px 0}.hero p{font-size:clamp(18px,2vw,26px);color:var(--muted);max-width:900px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:32px}.stat{border:1px solid var(--line);padding:18px;border-radius:15px;background:var(--panel2)}.stat strong{display:block;font-size:32px}.stat span{color:var(--muted);font-size:13px}.boundary{padding:30px}.boundary h2{font-size:31px;margin:0 0 18px}.legend{display:grid;gap:13px}.legend div{display:grid;grid-template-columns:14px 1fr;gap:12px;color:var(--muted)}.dot{width:10px;height:10px;border-radius:50%;margin-top:8px}.c{background:var(--green)}.i{background:var(--amber)}.r{background:var(--violet)}.u{background:var(--red)}.alert{border-left:5px solid var(--red);background:var(--panel2);padding:18px;margin-top:22px;border-radius:0 14px 14px 0}
+    section{padding:clamp(24px,3vw,46px);margin-top:26px}section h2{font-size:clamp(28px,3vw,46px);line-height:1.15;margin:7px 0 18px;letter-spacing:-.025em}section h3{font-size:22px;margin:28px 0 12px}.lead{color:var(--muted);max-width:1050px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.card{padding:22px;background:var(--panel2);box-shadow:none}.card h3{margin:0 0 8px}.card p,.card li{color:var(--muted)}.badge{display:inline-flex;align-items:center;min-height:28px;padding:3px 9px;border:1px solid currentColor;border-radius:999px;font-size:12px;font-weight:800;white-space:nowrap}.confirmed{color:var(--green)}.inferred{color:var(--amber)}.recommended{color:var(--violet)}.unknown{color:var(--red)}
+    .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:15px;margin:16px 0}table{border-collapse:collapse;width:100%;min-width:900px;background:var(--panel2)}th,td{text-align:left;vertical-align:top;padding:13px 15px;border-bottom:1px solid var(--line)}th{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);background:color-mix(in srgb,var(--panel2) 84%,var(--blue) 16%)}td{font-size:14px}tr:last-child td{border:0}
+    .filters{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.filter{min-height:44px;border:1px solid var(--line);border-radius:12px;padding:8px 13px;background:var(--panel2);color:var(--text);font-weight:700}.filter[aria-pressed="true"]{border-color:var(--blue);color:var(--blue)}
+    .journey{display:grid;grid-template-columns:135px repeat(6,minmax(180px,1fr));gap:8px;overflow-x:auto;padding-bottom:8px}.lane,.node{border:1px solid var(--line);border-radius:14px;padding:14px;min-height:110px}.lane{display:grid;place-items:center;font-weight:800;position:sticky;left:0;background:var(--panel);z-index:2}.node{background:var(--panel2)}.node strong{display:block;margin-bottom:4px}.node small{color:var(--muted)}.emotion{margin-top:8px;color:var(--amber);font-size:13px}.decision{border-style:dashed;border-color:var(--amber)}
+    .pipeline{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;align-items:stretch;margin:18px 0}.step{position:relative;padding:17px;background:var(--panel2);border:1px solid var(--line);border-radius:15px}.step:not(:last-child)::after{content:"→";position:absolute;right:-11px;top:42%;color:var(--blue);z-index:2}.step b{display:block}.step small{color:var(--muted)}
+    .layers{display:grid;gap:10px}.layer{display:grid;grid-template-columns:180px 1fr;gap:16px;align-items:start;border:1px solid var(--line);border-radius:15px;padding:15px;background:var(--panel2)}.layer>strong{color:var(--blue)}.chips{display:flex;gap:8px;flex-wrap:wrap}.chip{border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-size:13px}.solid{border-style:solid}.dash{border-style:dashed;color:var(--amber)}.dotted{border-style:dotted;color:var(--violet)}
+    pre{white-space:pre;overflow:auto;padding:18px;background:#080b10;color:#dbeafe;border:1px solid var(--line);border-radius:14px;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace}.callout{border:1px solid var(--amber);background:color-mix(in srgb,var(--panel2) 92%,var(--amber) 8%);padding:18px;border-radius:14px}.prompt-box{margin:16px 0;border:1px solid var(--line);border-radius:15px;background:var(--panel2);overflow:hidden}.prompt-box summary{min-height:52px;padding:13px 18px;display:flex;align-items:center;font-weight:800;color:var(--blue);cursor:pointer}.prompt-box[open] summary{border-bottom:1px solid var(--line)}.prompt-box pre{margin:0;border:0;border-radius:0;max-height:760px}.risk{display:grid;grid-template-columns:58px 1fr;gap:14px;padding:16px 0;border-bottom:1px solid var(--line)}.risk:last-child{border:0}.rank{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:var(--red);color:#160000;font-weight:900}.source-list li{margin:8px 0;color:var(--muted)}footer{color:var(--muted);text-align:center;padding:40px 0 0}
+    @media(max-width:1050px){.hero{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr 1fr}.pipeline{grid-template-columns:repeat(2,1fr)}.step::after{display:none}.layer{grid-template-columns:1fr}}
+    @media(max-width:650px){:root{--header:62px}header{padding:0 14px}.brand small,nav{display:none}main{width:94vw;padding-top:20px}.hero h1{font-size:48px}.stats,.grid,.grid.two{grid-template-columns:1fr}section,.hero-main,.boundary{padding:22px}.pipeline{grid-template-columns:1fr}.layer{padding:14px}.journey{grid-template-columns:110px repeat(6,250px)}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+    @media print{header,.theme,.filters{display:none}body{background:#fff;color:#111}main{width:100%}.hero>div,section,.card{box-shadow:none;break-inside:avoid}}
+  </style>
+</head>
+<body>
+<a class="skip" href="#main">跳到正文</a>
+<header><div class="brand">Manus <small>PRODUCT EVIDENCE REPORT</small></div><nav aria-label="章节导航"><a href="#evidence">证据</a><a href="#journey">旅程</a><a href="#agent">Agent</a><a href="#prompt">Sys Prompt</a><a href="#models">模型</a><a href="#context">上下文</a><a href="#architecture">架构</a><a href="#risk">风险</a><a href="#trace">追溯</a></nav><button class="theme" id="theme" aria-label="切换明暗主题">◐</button></header>
+<main id="main">
+  <div class="hero">
+    <div class="hero-main"><div class="eyebrow">Evidence-graded reverse analysis · 2026-08-18</div><h1>Manus<br>产品拆解报告</h1><p>Manus 把自然语言目标组织成“任务入口 → Agent 选择 → 上下文与能力装配 → 异步执行 → 用户确认/补充 → 结果交付”的通用执行工作台，并以项目、技能、连接器、计划和沙箱承载复用与自动化。</p><div class="stats"><div class="stat"><strong>15</strong><span>张页面截图，S44–S58</span></div><div class="stat"><strong>3</strong><span>个可见 Agent 档位</span></div><div class="stat"><strong>9</strong><span>类可见输入/任务模式</span></div><div class="stat"><strong>1</strong><span>条可复核执行链</span></div></div></div>
+    <div class="boundary"><h2>结论边界</h2><div class="legend"><div><span class="dot c"></span><span><b>已确认</b>：截图、官方页面或官方文档直接支持。</span></div><div><span class="dot i"></span><span><b>合理推断</b>：多条可见行为共同支持，但实现不可见。</span></div><div><span class="dot r"></span><span><b>建议设计</b>：为了可靠性、安全与治理提出。</span></div><div><span class="dot u"></span><span><b>未知</b>：当前证据不足，绝不默认存在。</span></div></div><div class="alert"><b>最重要限制</b><br>本组截图没有展示任务最终结果，也没有完成 Slack/Gmail 授权；因此只能确认“排队—执行尝试—等待用户”的中间状态，不能确认连接成功或汇总已产出。</div></div>
+  </div>
+
+  <section id="evidence"><div class="eyebrow">01 · Scope & evidence</div><h2>查看范围与事实来源</h2><p class="lead">截图覆盖 onboarding、免费活动、工作台入口、网站/幻灯片/设计模式、更多任务模式、附件/技能/计划/连接器、Agent 档位，以及一次 Slack/Gmail 汇报任务。截图文件名辅助排序，但最终顺序由页面状态承接共同校验。</p>
+    <div class="table-wrap"><table><thead><tr><th>ID</th><th>证据</th><th>可见事实</th><th>等级</th></tr></thead><tbody>
+      <tr><td>E-001</td><td><a href="#" title="原始截图未随仓库公开">S44</a></td><td>首次使用询问职业：企业主、增长、业余爱好者、电子商务、咨询、其他；允许“跳过”。</td><td><span class="badge confirmed">已确认</span></td></tr>
+      <tr><td>E-002</td><td><a href="#" title="原始截图未随仓库公开">S45</a></td><td>限时免费弹窗：Manus 1.6 与 1.6 Lite 可选、不消耗积分、高峰可能排队；有“稍后再说/免费使用”。</td><td><span class="badge confirmed">已确认</span></td></tr>
+      <tr><td>E-003</td><td><a href="#" title="原始截图未随仓库公开">S46</a></td><td>主工作台含输入框、桌面端、附件、推荐任务；出现数据备份/恢复通知与“立即备份”。</td><td><span class="badge confirmed">已确认</span></td></tr>
+      <tr><td>E-004</td><td><a href="#" title="原始截图未随仓库公开">S47</a>–<a href="#" title="原始截图未随仓库公开">S50</a></td><td>网站、幻灯片、设计、开发应用、视频、定时任务、Wide Research、电子表格、可视化、音频、Chat、Playbook 等入口；设计页显示 GPT Image 2。</td><td><span class="badge confirmed">已确认</span></td></tr>
+      <tr><td>E-005</td><td><a href="#" title="原始截图未随仓库公开">S51</a></td><td>附件来源：本地、库、最近任务、技能、计划、Google Drive、OneDrive、Figma；技能列出 financial-analysis、excel-generator。</td><td><span class="badge confirmed">已确认</span></td></tr>
+      <tr><td>E-006</td><td><a href="#" title="原始截图未随仓库公开">S52</a></td><td>可见 Agent 选择：Manus 1.6 Max（Pro）、Manus 1.6、Manus 1.6 Lite，并展示复杂度定位。</td><td><span class="badge confirmed">已确认</span></td></tr>
+      <tr><td>E-007</td><td><a href="#" title="原始截图未随仓库公开">S53</a>–<a href="#" title="原始截图未随仓库公开">S54</a></td><td>输入区提供“连接应用”和“会议纪要”入口；未实际连接或录音。</td><td><span class="badge confirmed">入口事实</span></td></tr>
+      <tr><td>E-008</td><td><a href="#" title="原始截图未随仓库公开">S55</a></td><td>用户要求作为团队汇报助理，连接 Slack/Gmail，先补齐连接，再总结 10 个活跃频道并询问是否定时；任务排队约 3 分钟，可取消等待或切换 Lite。</td><td><span class="badge confirmed">已确认</span></td></tr>
+      <tr><td>E-009</td><td><a href="#" title="原始截图未随仓库公开">S56</a>–<a href="#" title="原始截图未随仓库公开">S57</a></td><td>页面公开步骤显示检查配置、提交启用申请、验证权限；过程文案先后称“未启用”和“配置文件中成功启用”。</td><td><span class="badge inferred">页面事实 + 冲突</span></td></tr>
+      <tr><td>E-010</td><td><a href="#" title="原始截图未随仓库公开">S58</a></td><td>最终可见状态：Slack/Gmail 仍未启用、授权未确认；可连接或回复“使用示例数据”；“Manus 将在您回复后继续”。</td><td><span class="badge confirmed">等待用户</span></td></tr>
+    </tbody></table></div>
+    <div class="callout"><b>无法确认：</b>任务是否最终完成、Slack/Gmail 是否授权成功、真实频道是否被读取、汇总报告是否生成、定时任务是否创建、是否扣费、取消后的传播结果、错误/重试路径、生成资产文件、历史版本和分享结果。</div>
+  </section>
+
+  <section id="domains"><div class="eyebrow">02 · Product domains</div><h2>核心功能域</h2><div class="grid">
+    <div class="card"><span class="badge confirmed">已确认</span><h3>目标输入与任务创建</h3><p>自然语言、语音、附件、模板、推荐任务和模式入口共同构成任务创建面。</p></div>
+    <div class="card"><span class="badge confirmed">已确认</span><h3>Agent 档位</h3><p>1.6 Max / 1.6 / 1.6 Lite 根据复杂度、套餐和等待时间由用户选择。</p></div>
+    <div class="card"><span class="badge confirmed">已确认</span><h3>任务与异步执行</h3><p>任务列表、排队、预计等待、切换 Lite、取消等待、继续输入与通知入口。</p></div>
+    <div class="card"><span class="badge confirmed">已确认</span><h3>项目与上下文复用</h3><p>工作台有“添加到项目”，官方 Projects 文档确认共享指令与文件可被项目内任务继承。</p></div>
+    <div class="card"><span class="badge confirmed">已确认</span><h3>技能与能力装配</h3><p>输入区可搜索/添加/管理技能；官方定义技能为文件系统式、可复用的模块化工作流。</p></div>
+    <div class="card"><span class="badge confirmed">已确认</span><h3>连接器与外部数据</h3><p>截图出现 Slack、Gmail、Drive、OneDrive、Figma；官方说明连接器需要授权且可撤销。</p></div>
+    <div class="card"><span class="badge confirmed">已确认</span><h3>创作与开发模式</h3><p>网站、幻灯片、设计、游戏、应用、视频、图像、音频、电子表格和可视化。</p></div>
+    <div class="card"><span class="badge confirmed">已确认</span><h3>计划与自动化</h3><p>计划/定时任务入口可见；官方 Scheduled Tasks 支持在任务、项目和 Web App 中复用上下文。</p></div>
+    <div class="card"><span class="badge confirmed">已确认</span><h3>计费与服务等级</h3><p>截图显示限免、不消耗积分、高峰排队、Pro 优先；官方积分规则按 LLM、虚拟机和第三方 API 资源计费。</p></div>
+  </div></section>
+
+  <section id="journey"><div class="eyebrow">03 · User journey</div><h2>用户旅程图</h2><p class="lead">三条泳道同时呈现用户目标、界面反馈与系统结果。截图只覆盖到等待用户授权，因此“正常完成”是由官方任务生命周期支持的通用路径，不是本次任务已完成的事实。</p>
+    <div class="journey" aria-label="用户旅程三泳道">
+      <div class="lane">用户</div><div class="node"><strong>选择职业或跳过</strong><small>让推荐更贴近工作</small><div class="emotion">期待 / 轻微负担</div></div><div class="node"><strong>选择任务模式与 Agent</strong><small>权衡质量、速度、套餐</small><div class="emotion">探索</div></div><div class="node"><strong>输入团队汇报需求</strong><small>指定 Slack/Gmail 与输出格式</small><div class="emotion">明确委托</div></div><div class="node decision"><strong>等待还是切换？</strong><small>继续 1.6 / 改用 Lite / 取消</small><div class="emotion">等待焦虑</div></div><div class="node decision"><strong>授权还是示例？</strong><small>连接账户 / 使用示例数据</small><div class="emotion">隐私权衡</div></div><div class="node"><strong>检查结果并决定自动化</strong><small>本次截图尚未到达</small><div class="emotion">未知</div></div>
+      <div class="lane">产品界面</div><div class="node"><strong>onboarding 卡片</strong><small>6 类职业，“跳过”</small></div><div class="node"><strong>入口聚合</strong><small>模式、模板、能力、文件与 Agent 下拉</small></div><div class="node"><strong>创建任务卡</strong><small>用户原文进入任务，显示任务标题</small></div><div class="node"><strong>排队反馈</strong><small>预计 3 分钟；Lite 无需等待；取消等待</small></div><div class="node"><strong>步骤与等待态</strong><small>连接状态、启用申请、权限验证；等待用户回复</small></div><div class="node"><strong>结果/分享/定时入口</strong><small>界面有分享与定时任务，但本次未执行</small></div>
+      <div class="lane">系统结果</div><div class="node"><strong>可能形成用户偏好</strong><small>是否持久保存：未知</small></div><div class="node"><strong>任务配置组合</strong><small>Agent + 模式 + 附件/技能/项目</small></div><div class="node"><strong>进入异步任务</strong><small>任务创建与排队已确认</small></div><div class="node"><strong>运行或改路由</strong><small>继续排队 / Lite 执行 / 取消</small></div><div class="node"><strong>等待授权</strong><small>最终未读取真实 Slack/Gmail 数据</small></div><div class="node"><strong>成功 / 错误 / 中断</strong><small>官方生命周期支持；本样本未观察</small></div>
+    </div>
+    <div class="grid two"><div class="card"><h3>主要痛点</h3><ul><li>“配置文件中启用”与“连接器仍未启用”文案冲突，用户难判断真实状态。</li><li>排队前没有给出任务质量/速度差异和预计资源成本。</li><li>用户要求“先补齐连接，再继续”，但产品的启用尝试仍需要用户授权，自动化边界解释滞后。</li></ul></div><div class="card"><h3>同类产品机会</h3><ul><li>建立可视的能力依赖图：需要什么连接器、权限、数据范围、何时写外部系统。</li><li>创建任务前完成成本、等待时间与 Agent 能力对比。</li><li>把“配置、启用、授权、验证、可读、可写”拆成清晰状态，不使用单一“已连接”。</li></ul></div></div>
+  </section>
+
+  <section id="agent"><div class="eyebrow">04 · Agent contract</div><h2>可观察 Agent 契约</h2><p class="lead">页面明确出现 Manus 1.6 Max、1.6、1.6 Lite 三个档位，但没有公开专业子 Agent 名称，也没有展示隐藏编排器。以下为一个通用 Manus 执行 Agent 的功能契约；官方函数名、Prompt 和内部思维均未知。</p>
+    <div class="grid">
+      <div class="card"><h3>Manus 1.6 Max</h3><span class="badge confirmed">页面具名</span><p>Pro；“为复杂任务设计的高性能代理”。本场景未选择、未执行。</p></div>
+      <div class="card"><h3>Manus 1.6</h3><span class="badge confirmed">页面具名</span><p>“多功能代理，能够执行大部分任务”；本次 Slack/Gmail 任务由此档位创建。</p></div>
+      <div class="card"><h3>Manus 1.6 Lite</h3><span class="badge confirmed">页面具名</span><p>“适合日常任务的轻量级代理”；排队页提示无需等待，用户可切换。</p></div>
+    </div>
+    <h3>I/O 契约卡：Manus 执行 Agent</h3><div class="table-wrap"><table><thead><tr><th>契约项</th><th>可观察内容</th><th>证据等级</th><th>证据</th></tr></thead><tbody>
+      <tr><td>核心目标</td><td>接收目标，选择/使用能力，在异步任务中执行并交付结果；遇到授权或输入缺口时等待用户。</td><td><span class="badge confirmed">已确认</span></td><td>S55–S58；官方 Welcome、Task Lifecycle</td></tr>
+      <tr><td>触发条件</td><td>用户提交自然语言任务；可附加模式、Agent 档位、附件、技能、连接器、项目。</td><td><span class="badge confirmed">已确认</span></td><td>S46–S55</td></tr>
+      <tr><td>用户当前输入</td><td>汇报助理角色、Slack/Gmail 数据源、频道范围、摘要格式、先连接、之后询问定时。</td><td><span class="badge confirmed">已确认</span></td><td>S55</td></tr>
+      <tr><td>长期信息</td><td>账号、套餐、可能的连接器配置与项目；本样本只证明页面显示用户、Pro/限免与配置检查，不证明 Agent 读取全部长期信息。</td><td><span class="badge inferred">部分事实</span></td><td>S45、S52、S56</td></tr>
+      <tr><td>项目上下文</td><td>任务消息和步骤历史可见；是否属于 Project、是否继承 master instruction/文件，本任务未知。</td><td><span class="badge unknown">未知</span></td><td>S55–S58</td></tr>
+      <tr><td>可观察判断</td><td>检查连接器状态；尝试启用；验证权限；若未授权则请求用户连接或改用示例数据；进入等待。</td><td><span class="badge confirmed">已确认</span></td><td>S56–S58</td></tr>
+      <tr><td>功能工具</td><td>读取连接器配置、请求启用、验证授权/数据访问（均为功能命名，并非官方工具名）。</td><td><span class="badge inferred">执行摘要</span></td><td>S56–S58</td></tr>
+      <tr><td>输出</td><td>自然语言回复、步骤卡、任务状态、等待提示；没有可见的最终汇总资产。</td><td><span class="badge confirmed">已确认</span></td><td>S55–S58</td></tr>
+      <tr><td>完成条件</td><td>本样本未完成。建议必须同时满足授权有效、数据读取成功、报告存在、状态写入成功、用户可查看。</td><td><span class="badge recommended">建议设计</span></td><td>S58 + 可靠性要求</td></tr>
+    </tbody></table></div>
+    <h3>工具契约</h3><div class="table-wrap"><table><thead><tr><th>功能工具（非官方名）</th><th>前置条件</th><th>可见结果</th><th>异常/重试</th><th>等级</th></tr></thead><tbody>
+      <tr><td>读取连接器配置</td><td>任务涉及 Slack/Gmail</td><td>页面称均已配置但未启用</td><td>配置与可用状态需分开验证</td><td><span class="badge confirmed">结果可见</span></td></tr>
+      <tr><td>请求启用连接器</td><td>用户已要求启用；外部授权仍需用户</td><td>页面显示“提交启用申请”及启用尝试</td><td>不能绕过 OAuth/权限确认</td><td><span class="badge inferred">功能命名</span></td></tr>
+      <tr><td>验证权限与数据访问</td><td>连接器启用且授权完成</td><td>最终显示授权未确认，未进入数据读取</td><td>等待用户；可改用示例数据</td><td><span class="badge confirmed">失败分支可见</span></td></tr>
+      <tr><td>检索 Slack/Gmail 数据</td><td>真实数据路径可用</td><td>未发生</td><td>未知</td><td><span class="badge unknown">未知</span></td></tr>
+      <tr><td>生成频道汇总</td><td>10 个频道数据已获取</td><td>未发生</td><td>未知</td><td><span class="badge unknown">未知</span></td></tr>
+      <tr><td>创建定时任务</td><td>汇总完成且用户明确确认时间</td><td>未发生</td><td>不应在提问前自动创建</td><td><span class="badge unknown">未知</span></td></tr>
+    </tbody></table></div>
+    <h3>可观察状态机</h3><pre aria-label="状态机 Mermaid 源码">stateDiagram-v2
+  [*] --> configured: 用户提交目标 + 选择 Manus 1.6
+  configured --> queued: 创建任务
+  queued --> running: 排队结束
+  queued --> cancelled: 取消等待
+  queued --> rerouted: 切换 Manus 1.6 Lite
+  running --> checking_connector: 检查 Slack/Gmail
+  checking_connector --> enabling: 配置存在但未启用
+  enabling --> validating_permission: 提交启用/验证授权
+  validating_permission --> waiting_user: 授权未确认
+  waiting_user --> running: 用户完成连接
+  waiting_user --> sample_mode: 用户选择示例数据
+  running --> completed: 结果实际存在且状态成功（本次未见）
+  running --> error: 不可恢复错误（本次未见）</pre>
+    <div class="callout"><b>阶段门更新：</b>本报告现在选择证据最完整的“Manus 1.6 通用执行 Agent（Slack/Gmail 团队汇报任务）”作为单一目标，并在下一节给出功能等价 System Prompt。它是行为复刻设计，不是 Manus 官方原文。</div>
+  </section>
+
+  <section id="prompt"><div class="eyebrow">05 · Functional-equivalent System Prompt</div><h2>Manus 1.6 通用执行 Agent：提示词逆向</h2><p class="lead">目标 Agent 由 S55–S58 的同一条任务链明确支持。以下内容复刻它对目标拆解、连接器检查、授权等待、示例数据旁路和继续执行的<b>可观察功能</b>；不声称恢复了 Manus 的隐藏 System Prompt、思维链、官方工具名或内部字段。</p>
+    <div class="grid two">
+      <div class="card"><span class="badge confirmed">目标边界</span><h3>它负责什么</h3><ul><li>接收团队汇报目标并保持用户格式约束。</li><li>检查 Slack/Gmail 的配置、启用、授权和数据可访问性。</li><li>真实路径不可用时，向用户提供“完成连接”或“使用示例数据”两条路径。</li><li>条件满足后读取数据、形成汇总，并在用户确认后再创建定时任务。</li></ul></div>
+      <div class="card"><span class="badge unknown">不能冒充事实</span><h3>它不负责或证据不足</h3><ul><li>不能绕过 OAuth 或代替用户授予第三方权限。</li><li>不能把“配置文件已启用”当成真实授权成功。</li><li>没有证据证明它能直接修改官方配置文件、发送邮件或创建计划。</li><li>本样本没有最终汇总，不能反推质量校验、重试次数和完整工具参数。</li></ul></div>
+    </div>
+    <h3>输入、输出与工具契约</h3><div class="table-wrap"><table><thead><tr><th>契约</th><th>必需/可选内容</th><th>行为规则</th><th>证据等级</th></tr></thead><tbody>
+      <tr><td>用户当前输入</td><td><b>必需：</b>任务目标、数据源、范围、摘要格式；<b>可选：</b>定时意向、示例数据许可。</td><td>保留“10 个最活跃频道、上次查看以来、每频道最多 3 行、决策/问题/@行动项”等约束。</td><td><span class="badge confirmed">事实</span> S55</td></tr>
+      <tr><td>运行时结果</td><td>排队状态、连接器配置、启用结果、授权结果、数据访问结果。</td><td>配置、启用、授权、可访问必须分别判断；任何一层失败都不能声称已连接。</td><td><span class="badge confirmed">事实</span> S55–S58</td></tr>
+      <tr><td>上下文</td><td>当前任务原文、步骤状态、用户回复；项目/长期偏好是否可读未知。</td><td>只读取当前任务可见且必要的信息，不默认存在 Project、长期记忆或隐藏用户画像。</td><td><span class="badge inferred">事实+推断</span></td></tr>
+      <tr><td>工具</td><td>&lt;检查连接器状态&gt;、&lt;请求启用连接器&gt;、&lt;验证授权与数据访问&gt;、&lt;读取 Slack/Gmail 数据&gt;、&lt;生成汇总&gt;、&lt;创建计划&gt;。</td><td>均为功能占位名，不是官方函数名；后三项在本样本中未实际执行。</td><td><span class="badge inferred">功能命名</span></td></tr>
+      <tr><td>用户输出</td><td>简短计划、步骤卡、状态说明、明确选项、最终汇总或错误解释。</td><td>等待用户时必须说明缺口、下一动作与示例数据替代路径。</td><td><span class="badge confirmed">事实</span> S56–S58</td></tr>
+      <tr><td>状态写入</td><td>queued/running/checking/waiting_user/completed/failed/interrupted 等语义状态。</td><td>字段名属于推导设计；只有页面状态变化可确认，后端 schema 未知。</td><td><span class="badge recommended">建议设计</span></td></tr>
+    </tbody></table></div>
+    <h3>规则推导</h3><div class="grid">
+      <div class="card"><span class="badge confirmed">事实规则</span><p>先检查连接器；未授权则等待用户；允许用户改用示例数据；任务可排队、切 Lite 或取消；定时汇总必须在本次汇总后再询问。</p></div>
+      <div class="card"><span class="badge inferred">推断规则</span><p>需要保存当前目标与格式约束；恢复执行时应从等待点继续；真实数据和示例数据必须标明来源，不得混写。</p></div>
+      <div class="card"><span class="badge recommended">建议规则</span><p>使用统一状态事实源、幂等键、授权分层、结果验证和完成门；写外部系统、创建定时任务及重复扣费动作必须结构化确认。</p></div>
+    </div>
+    <h3>可观察与建议状态机</h3><pre aria-label="功能等价 Agent 状态机 Mermaid 源码">stateDiagram-v2
+  [*] --> waiting_input
+  waiting_input --> queued: 用户提交完整目标
+  queued --> executing: 调度成功
+  queued --> interrupted: 取消等待
+  queued --> rerouted: 用户选择 Lite
+  executing --> checking_connectors
+  checking_connectors --> validating_access: 已配置/已启用
+  checking_connectors --> enabling: 已配置但未启用
+  enabling --> validating_access: 启用结果可验证
+  validating_access --> waiting_confirm: 需要用户授权
+  waiting_confirm --> executing: 用户完成连接
+  waiting_confirm --> sample_mode: 用户选择示例数据
+  waiting_confirm --> interrupted: 用户中断
+  executing --> validating_result: 数据读取与汇总完成
+  sample_mode --> validating_result: 示例汇总完成
+  validating_result --> completed: 结果存在+约束验证+状态写入
+  validating_result --> retrying: 可恢复失败
+  retrying --> executing: 幂等重试
+  completed --> waiting_schedule_confirm: 询问是否工作日17:00执行
+  waiting_schedule_confirm --> handoff: 用户明确确认
+  waiting_schedule_confirm --> [*]: 用户拒绝或暂不设置</pre>
+    <h3>功能等价 System Prompt</h3><details class="prompt-box" open><summary>展开 / 收起可直接使用的 Prompt（非 Manus 官方原文）</summary><pre>Agent 名称：通用任务执行 Agent（Manus 1.6 行为等价设计）
+
+1. 角色
+你是面向知识工作者的通用任务执行 Agent。你负责把自然语言目标转化为可验证的执行步骤，使用用户已授权的连接器与运行工具完成任务，并在权限、输入或确认不足时清楚地暂停等待。
+
+2. 核心目标
+在不绕过权限、不虚构执行结果的前提下，完成用户指定的数据读取、分析和交付；保留范围、时间窗口、格式、对象数量和后续自动化条件等全部约束。
+
+3. 任务边界
+- 允许：检查能力状态、读取已授权数据、生成分析结果、提供示例数据旁路、请求必要确认、在用户明确确认后交接计划任务。
+- 禁止：读取未授权账户；把“已配置”当成“已授权/可访问”；伪造数据、工具结果或完成状态；未经确认发送、发布、删除、购买或创建重复计划。
+- 权限、关键输入或可验证数据路径缺失时必须停止并询问用户。
+
+4. 输入契约
+- 必填：&lt;task_goal&gt;、&lt;data_sources&gt;、&lt;scope&gt;、&lt;time_window&gt;、&lt;output_constraints&gt;。
+- 可选：&lt;sample_data_allowed&gt;、&lt;schedule_intent&gt;、&lt;project_context&gt;、&lt;attachments&gt;。
+- 运行时：&lt;queue_state&gt;、&lt;connector_state&gt;、&lt;authorization_state&gt;、&lt;tool_results&gt;、&lt;user_reply&gt;。
+字段名是语义占位符；不要假设平台存在同名字段。
+
+5. 全局上下文协议
+- 读取：当前用户消息、当前任务历史、用户明确选择、可见连接器状态、当前运行结果。
+- 写入（推导设计）：任务状态、等待原因、已确认输入、执行结果引用、错误记录、用户确认记录。
+- 禁止修改：用户原始需求、历史结果、权限记录和已确认资产；需要更新时创建新版本。
+- 不得默认存在用户长期偏好、项目共享文件、余额、历史账户或隐藏画像；没有证据就标记 unknown。
+
+6. 工作流程
+1) 解析目标并提取数据源、范围、时间窗口、输出格式、自动化意向。
+2) 若必填信息缺失，进入 waiting_input，只询问阻塞执行的最少问题。
+3) 写入 queued/running 状态后，检查每个连接器的 configured、enabled、authorized、reachable、readable 状态。
+4) 若需要用户授权，进入 waiting_confirm，说明具体缺口，并提供“完成连接”与“使用示例数据”两条明确路径。
+5) 只有真实授权与可访问性验证通过后，才能读取真实数据；若用户选择示例数据，结果必须显著标记为模拟演示。
+6) 按用户约束处理数据并生成结果。
+7) 验证结果存在、来源正确、范围/时间/数量/格式满足要求，且页面状态与任务状态一致。
+8) 只有验证通过才能进入 completed；随后再询问是否创建定时任务。
+
+7. 工具调用规范
+- &lt;检查连接器状态&gt;：输入连接器名称；输出分层状态。不得将配置成功等同于授权成功。
+- &lt;请求启用连接器&gt;：仅在用户已要求使用该连接器时调用；外部 OAuth 仍由用户完成。
+- &lt;验证授权与数据访问&gt;：授权后调用；必须验证实际可读数据，而非只检查配置文件。
+- &lt;读取外部数据&gt;：仅在 authorized+reachable+readable 时调用；记录时间窗口与范围。
+- &lt;生成汇总&gt;：输入可追溯的数据引用和格式约束；输出结果及验证摘要。
+- &lt;创建定时任务&gt;：必须有结构化用户确认、时区、频率和幂等键。
+- 官方工具名未知；以上均为功能占位符。重试次数遵循平台策略；任何重试必须幂等并记录 attempt_id。
+
+8. 用户确认机制
+以下动作必须记录明确确认：第三方授权、使用示例数据替代真实数据、写入外部系统、创建或覆盖定时任务、可能重复扣费的重试。自然语言询问不等于确认记录。
+
+9. 结果验证
+不能只相信工具返回 success。检查：真实资产/结果存在；数据源与时间窗口正确；指定对象数量和格式满足要求；决策、问题、@行动项的提取有来源；模拟结果明确标注；聊天、步骤卡和任务状态一致。失败时不得声称完成。
+
+10. 修改与回退
+用户修改格式时只重做格式化；修改范围、时间窗口或数据源时，失效相关读取结果和下游汇总并创建新版本。不得直接覆盖已确认历史结果。
+
+11. 异常处理
+- 输入缺失：waiting_input。
+- 未授权/不可访问：waiting_confirm，提供连接与示例数据路径。
+- 工具失败：记录错误；只对可恢复错误幂等重试。
+- 状态冲突或写入失败：停止，标记 conflict/failed，不声称完成。
+- 用户中断：写 interrupted，停止尚未开始的调用并传播取消信号。
+- 余额不足或安全拦截：说明可见错误与允许的下一步，不猜测“随机误判”。
+
+12. 状态机
+允许状态：waiting_input、queued、running、checking_connectors、waiting_confirm、executing、validating、retrying、completed、failed、interrupted、handoff。每次只允许一个主状态；状态转换必须附带可验证事件。
+
+13. 下游交接
+交接计划任务前提供：任务状态、已确认输入、结果引用、时间窗口、时区、频率、连接器授权状态、未解决问题和 confirmation_id。缺一项则不得 handoff。
+
+14. 完成条件
+同时满足：必需输入完整；所需授权有效；工具结果与最终结果实际存在；结果验证通过；状态写入成功；用户可以访问结果。回复“已完成”本身不构成完成。
+
+15. 输出格式
+执行中输出：当前目标 / 已确认输入 / 当前步骤 / 状态 / 阻塞原因 / 可选动作。
+完成时输出：结果摘要 / 数据范围与时间 / 关键结论 / 来源说明 / 验证结果 / 未解决问题 / 是否需要创建定时任务。
+
+16. 表达要求
+用用户界面语言简洁说明可见事实。把推断、模拟数据和未知事项明确标注；不要输出隐藏思维链，只提供可审计的判断摘要。</pre></details>
+    <h3>规则—证据追溯</h3><div class="table-wrap"><table><thead><tr><th>Prompt 规则</th><th>来源</th><th>分类</th><th>不能推出什么</th></tr></thead><tbody>
+      <tr><td>检查 Slack/Gmail，再继续汇总</td><td>S55 用户原文；S56 Agent 回复与步骤</td><td><span class="badge confirmed">事实规则</span></td><td>不能推出官方工具名与参数。</td></tr>
+      <tr><td>未授权时等待用户，并提供示例数据旁路</td><td>S58 页面原文与“Manus 将在您回复后继续”</td><td><span class="badge confirmed">事实规则</span></td><td>不能推出等待超时与恢复实现。</td></tr>
+      <tr><td>配置/启用/授权/可访问分层验证</td><td>S56–S58 出现状态冲突</td><td><span class="badge recommended">建议规则</span></td><td>不能证明 Manus 当前已有统一状态机。</td></tr>
+      <tr><td>定时任务必须在汇总后询问</td><td>S55 用户明确要求“然后询问”</td><td><span class="badge confirmed">事实规则</span></td><td>不能证明计划创建工具已调用。</td></tr>
+      <tr><td>完成需要结果存在与状态一致</td><td>本样本最终资产缺失；产品拆解证据规则</td><td><span class="badge recommended">建议规则</span></td><td>不能说当前产品已执行质量门。</td></tr>
+      <tr><td>重试幂等、取消向下游传播</td><td>排队取消入口可见，但后台行为不可见</td><td><span class="badge recommended">建议规则</span></td><td>不能确认实际重试次数或退款。</td></tr>
+    </tbody></table></div>
+    <h3>最小测试集</h3><div class="table-wrap"><table><thead><tr><th>测试</th><th>初始状态/输入</th><th>预期判断与工具</th><th>预期状态</th><th>禁止行为</th></tr></thead><tbody>
+      <tr><td>正常输入完整</td><td>Slack/Gmail 均已授权；范围和格式完整</td><td>检查状态→读取数据→生成并验证汇总</td><td>running→validating→completed</td><td>未验证结果就声称完成</td></tr>
+      <tr><td>缺少必要输入</td><td>未说明时间窗口或频道范围</td><td>只询问阻塞执行的最少问题</td><td>waiting_input</td><td>自行编造范围</td></tr>
+      <tr><td>局部修改</td><td>仅把每频道 3 行改为 5 行</td><td>复用同版本数据，重做格式化与验证</td><td>validating→completed 新版本</td><td>无谓重新授权或重复读取</td></tr>
+      <tr><td>工具失败</td><td>Slack 读取暂时失败</td><td>记录错误；符合策略时幂等重试</td><td>retrying 或 failed</td><td>重复扣费/重复外部动作</td></tr>
+      <tr><td>用户中断</td><td>queued/executing 时取消</td><td>传播取消并保存中断原因</td><td>interrupted</td><td>后台继续读取或发送</td></tr>
+      <tr><td>页面状态冲突</td><td>配置文件称启用，OAuth 未授权</td><td>以实际访问验证为准，要求授权</td><td>waiting_confirm/conflict</td><td>声称连接成功</td></tr>
+      <tr><td>使用示例数据</td><td>用户拒绝连接并明确选择示例</td><td>跳过真实读取，生成标记为模拟的结果</td><td>sample_mode→validating</td><td>暗示数据来自真实 Slack/Gmail</td></tr>
+      <tr><td>创建定时任务</td><td>汇总已完成，但用户尚未确认</td><td>只询问时区/频率并等待确认</td><td>waiting_schedule_confirm</td><td>自动创建工作日 17:00 计划</td></tr>
+    </tbody></table></div>
+  </section>
+
+  <section id="models"><div class="eyebrow">06 · Models & routing</div><h2>模型与 Agent 版本矩阵</h2><p class="lead">这里把三个容易混淆的概念拆开：<b>Manus 1.6 / Max / Lite 是 Agent 档位或执行架构</b>；GPT Image 2、Nano Banana Pro 是面向图像/幻灯片的专用生成模型；Agent 背后的文本基础模型厂商与精确版本，本组页面和当前官方资料均未披露。</p>
+    <div class="alert"><b>先讲结论</b><br>你能确定 Manus 提供了哪些“Agent 版本”，也能确定设计入口出现了 GPT Image 2；但不能据此断言 Manus 1.6 的底层是 GPT‑5、Claude 或 Gemini。Manus 官方工程文章将产品描述为构建在前沿模型之上的、尽量“模型无关”的上下文工程与 Agent 系统，这反而说明用户看到的 Agent 版本不等于某一个固定基础模型版本。</div>
+    <h3>Agent 档位：决定任务执行深度、速度与服务等级</h3><div class="table-wrap"><table><thead><tr><th>名称</th><th>它是什么</th><th>官方/页面定位与好处</th><th>适合任务</th><th>取舍与证据边界</th><th>证据</th></tr></thead><tbody>
+      <tr><td><b>Manus 1.6 Max</b><br><code>manus-1.6-max</code></td><td>旗舰 Agent 档位，不是已披露的底模名称</td><td>更强的规划、问题求解、工具使用可靠性与一次完成率；官方尤其强调复杂多步任务、表格/财务建模、数据分析、自动报告和 Web 开发。</td><td>复杂研究、长链路执行、高准确度分析、表格建模、交互式网站</td><td>Pro 可用；官方说明偏“更深推理”，但没有公开精确上下文窗口、延迟、单任务价格或底层 LLM。</td><td><span class="badge confirmed">页面+官方确认</span><br>S52；<a href="https://manus.im/blog/manus-max-release">1.6 发布说明</a>；<a href="https://manus.im/blog/manus-agents-telegram">版本取舍</a></td></tr>
+      <tr><td><b>Manus 1.6</b><br><code>manus-1.6</code></td><td>通用 Agent 档位</td><td>页面定义为“多功能代理，能够执行大部分任务”；本次 Slack/Gmail 汇报任务由该档位创建。</td><td>一般多步骤办公任务、连接器任务、网页与文件处理</td><td>本样本出现约 3 分钟排队；相对 Max/Lite 的准确率、速度和工具差异未被官方量化。</td><td><span class="badge confirmed">页面确认</span><br>S46、S52、S55；<a href="https://open.manus.im/docs/v1/create-task">官方 API 标识</a></td></tr>
+      <tr><td><b>Manus 1.6 Lite</b><br><code>manus-1.6-lite</code></td><td>轻量 Agent 档位</td><td>官方定位为速度优先的日常 Agent，适合快速问答、摘要与轻量任务；免费日积分仅可用于 Lite，截图还显示它可绕过当时的排队。</td><td>快速摘要、简单资料整理、轻任务、速度/额度敏感场景</td><td>相对 Max 的深度与复杂任务能力较弱；切换后结果是否完全等价、上下文是否完整继承，本样本未验证。</td><td><span class="badge confirmed">页面+官方确认</span><br>S45、S52、S55；<a href="https://manus.im/blog/manus-agents-telegram">版本取舍</a>；<a href="https://help.manus.im/en/articles/11985189-what-should-i-do-if-my-daily-refresh-credits-have-not-refreshed">Lite 日积分</a></td></tr>
+    </tbody></table></div>
+    <h3>专用生成模型与渲染路径：决定视觉资产怎么产生</h3><div class="table-wrap"><table><thead><tr><th>名称</th><th>类型/可见性</th><th>主要好处</th><th>适合场景</th><th>限制与注意</th></tr></thead><tbody>
+      <tr><td><b>GPT Image 2</b></td><td><span class="badge confirmed">S49 已选中</span><br>OpenAI 图像模型；Manus 官方确认集成</td><td>官方主张支持 4K 写实输出、较强文字渲染、空间关系理解和可编辑性；“先推理再渲染”可减少物体数量、布局和文字出错。</td><td>海报、带文字的视觉稿、复杂构图、需要后续局部编辑的图片或幻灯片视觉</td><td>截图只证明设计模式选中了它，不证明所有 Manus 视觉任务都使用它，也不证明版本会永久固定。</td></tr>
+      <tr><td><b>Nano Banana Pro</b></td><td><span class="badge confirmed">官方能力</span><br>Google 图像模型；本组截图未见实际选中</td><td>官方强调演示文稿里的清晰文字、信息图、品牌/艺术方向一致性、写实与上下文图像；后续支持对文本或视觉元素做定向编辑。</td><td>高视觉冲击的演示文稿、品牌统一的整套页面、信息图</td><td>不可写成“本次任务实际使用”；对数据密集、频繁更新且要求文本完全可编辑的内容，官方建议标准 HTML Slides 路径。</td></tr>
+      <tr><td><b>Standard HTML Slides</b></td><td><span class="badge inferred">产品路径</span><br>渲染/编辑方式，不是基础模型</td><td>文本、图表和布局更容易精确编辑与持续更新，适合数据密集型内容。</td><td>报告、业务汇报、经常改数字或文案的演示文稿</td><td>视觉表现可能不如整页图像生成强；具体使用的文本/代码模型未知。</td></tr>
+      <tr><td><b>Wide Research</b></td><td><span class="badge confirmed">工作流能力</span><br>不是基础模型</td><td>官方 1.6 发布说明称其子 Agent 全部采用 Max 架构，适合并行、广覆盖研究。</td><td>多来源调研、需要拆成大量并行子任务的研究</td><td>不能由此推断子 Agent 的底层 LLM 厂商与精确版本。</td></tr>
+    </tbody></table></div>
+    <h3>怎么选：按任务而不是按“最贵版本”</h3><div class="grid">
+      <div class="card"><span class="badge confirmed">复杂度优先</span><h3>Max</h3><p>任务长、步骤多、失败成本高，或包含复杂表格、财务、研究、Web 开发时优先。价值在更强的一次完成率与工具可靠性。</p></div>
+      <div class="card"><span class="badge confirmed">通用平衡</span><h3>1.6</h3><p>常规多步骤任务先用通用档；如果只是在排队时切 Lite，产品应先提示可能的质量与上下文差异。</p></div>
+      <div class="card"><span class="badge confirmed">速度/额度优先</span><h3>Lite</h3><p>摘要、问答、轻量整理或免费额度场景优先；复杂任务不要只因“无需等待”就无提示降档。</p></div>
+      <div class="card"><span class="badge confirmed">视觉文字与构图</span><h3>GPT Image 2</h3><p>需要图片中的文字、复杂空间关系、4K 视觉或局部编辑时更匹配。</p></div>
+      <div class="card"><span class="badge confirmed">高视觉演示</span><h3>Nano Banana Pro</h3><p>整套幻灯片强调视觉一致性、品牌感和信息图时适合；本样本未观察实际调用。</p></div>
+      <div class="card"><span class="badge inferred">可编辑数据演示</span><h3>HTML Slides</h3><p>数字和文本要频繁更新、需要对象级编辑时更合适；它是产品实现路径而非模型版本。</p></div>
+    </div>
+    <h3>底层基础模型透明度审计</h3><div class="table-wrap"><table><thead><tr><th>要确认的问题</th><th>当前结论</th><th>为什么</th><th>报告处理</th></tr></thead><tbody>
+      <tr><td>Manus 1.6 / Max / Lite 底层分别使用 GPT、Claude 还是 Gemini？</td><td><span class="badge unknown">未知</span></td><td>截图和官方 1.6 产品资料都没有给出可复核映射；官方上下文工程文章提到 Claude Sonnet 仅用于解释缓存成本，不足以证明当前路由。</td><td>不猜厂商、不猜版本、不把 Agent 档位冒充基础模型。</td></tr>
+      <tr><td>同一任务是否会动态切换多个文本模型？</td><td><span class="badge inferred">可能但未确认</span></td><td>官方称架构尽量模型无关，多模态任务也需要不同能力；但没有前端或官方路由表证据。</td><td>主架构中保留“模型网关/能力注册表”为合理推断或建议，不写成现状事实。</td></tr>
+      <tr><td>精确上下文窗口、温度、推理预算、版本发布日期？</td><td><span class="badge unknown">未知</span></td><td>用户界面、官方发布说明和 API 档位枚举都未披露。</td><td>列为后续需要官方确认的问题。</td></tr>
+    </tbody></table></div>
+  </section>
+
+  <section id="context"><div class="eyebrow">07 · Context & data</div><h2>上下文字段证据审计</h2><p class="lead">候选上下文被拆成“存在、值、写、读、下游消费”五个独立问题。分析名称不代表 Manus 的真实字段或表名。</p>
+    <div class="filters" role="group" aria-label="字段证据筛选"><button class="filter" data-filter="all" aria-pressed="true">全部</button><button class="filter" data-filter="confirmed" aria-pressed="false">已确认</button><button class="filter" data-filter="inferred" aria-pressed="false">推断</button><button class="filter" data-filter="unknown" aria-pressed="false">未知</button><button class="filter" data-filter="recommended" aria-pressed="false">建议</button></div>
+    <div class="table-wrap"><table id="field-table"><thead><tr><th>候选对象</th><th>存在/值</th><th>写证据</th><th>读/消费证据</th><th>结论</th></tr></thead><tbody>
+      <tr data-class="confirmed"><td>UserPreference</td><td>职业选择或跳过可见</td><td>未看到提交后的保存</td><td>未看到推荐因此变化</td><td><span class="badge confirmed">仅入口确认</span></td></tr>
+      <tr data-class="confirmed"><td>AgentVariant</td><td>Max / 1.6 / Lite 及定位可见</td><td>1.6 选中；可切换 Lite</td><td>排队策略受选择影响</td><td><span class="badge confirmed">已确认</span></td></tr>
+      <tr data-class="confirmed"><td>Task</td><td>任务标题、用户消息、队列状态可见</td><td>提交后创建</td><td>进入步骤与等待态</td><td><span class="badge confirmed">已确认</span></td></tr>
+      <tr data-class="confirmed"><td>ConnectorState</td><td>配置/启用/授权状态文案可见</td><td>启用申请尝试可见</td><td>决定继续或等待用户</td><td><span class="badge confirmed">存在但语义冲突</span></td></tr>
+      <tr data-class="confirmed"><td>SkillSelection</td><td>技能搜索、两个技能名称可见</td><td>本次未选择</td><td>本任务未消费</td><td><span class="badge confirmed">入口存在</span></td></tr>
+      <tr data-class="confirmed"><td>ProjectContext</td><td>“添加到项目”与项目入口可见</td><td>本次未添加</td><td>本任务未见继承</td><td><span class="badge confirmed">能力存在</span></td></tr>
+      <tr data-class="inferred"><td>WorkflowState</td><td>排队、运行步骤、等待用户可见</td><td>状态随页面变化</td><td>界面行为依赖状态</td><td><span class="badge inferred">语义对象推断</span></td></tr>
+      <tr data-class="unknown"><td>ToolCallLog</td><td>步骤摘要与终端缩略图可见</td><td>官方函数名/参数不可见</td><td>下游是否直接消费不可见</td><td><span class="badge unknown">结构未知</span></td></tr>
+      <tr data-class="unknown"><td>BillingRecord</td><td>限免/不消耗积分文案可见</td><td>无扣费记录</td><td>是否真正计费未知</td><td><span class="badge unknown">无本次记录</span></td></tr>
+      <tr data-class="recommended"><td>ResultValidation</td><td>本样本无最终结果</td><td>应写入数据覆盖率/格式校验</td><td>完成门应读取</td><td><span class="badge recommended">建议设计</span></td></tr>
+      <tr data-class="recommended"><td>ConnectorCapability</td><td>应拆为 configured/enabled/authorized/readable/writable</td><td>每步原子更新</td><td>执行前强制检查</td><td><span class="badge recommended">建议设计</span></td></tr>
+    </tbody></table></div>
+    <h3>关键数据实体（分析模板）</h3><div class="table-wrap"><table><thead><tr><th>实体</th><th>角色</th><th>页面证据</th><th>关系等级</th></tr></thead><tbody>
+      <tr><td>User / Workspace</td><td>账号、套餐、私人连接器与资源边界</td><td>头像/用户名、升级、限免、官方连接器权限说明</td><td><span class="badge confirmed">部分确认</span></td></tr>
+      <tr><td>Task / Message</td><td>目标、消息、进度和结果容器</td><td>S55–S58；官方 API task 生命周期</td><td><span class="badge confirmed">确认</span></td></tr>
+      <tr><td>AgentVariant</td><td>执行能力与服务等级</td><td>S52</td><td><span class="badge confirmed">确认</span></td></tr>
+      <tr><td>Project</td><td>共享指令、文件与任务组织</td><td>S47；官方 Projects</td><td><span class="badge confirmed">确认</span></td></tr>
+      <tr><td>Skill</td><td>可复用专业流程</td><td>S51；官方 Skills</td><td><span class="badge confirmed">确认</span></td></tr>
+      <tr><td>Connector / Authorization</td><td>第三方数据与动作权限</td><td>S53、S56–S58；官方 Connectors</td><td><span class="badge confirmed">确认</span></td></tr>
+      <tr><td>Execution / Sandbox</td><td>异步执行和文件/浏览器/代码环境</td><td>官方 Welcome 与 Sandbox；前端未直接展示实体</td><td><span class="badge inferred">官方能力 + UI推断</span></td></tr>
+      <tr><td>Artifact / Version</td><td>结果文件与版本</td><td>本样本无最终文件；官方沙箱说明存在 artifacts</td><td><span class="badge unknown">当前任务未知</span></td></tr>
+      <tr><td>Schedule / Run</td><td>重复执行与运行历史</td><td>入口可见；官方 Scheduled Tasks</td><td><span class="badge confirmed">能力确认</span></td></tr>
+    </tbody></table></div>
+    <pre aria-label="ER 图 Mermaid 源码">erDiagram
+  USER ||--o{ TASK : creates
+  USER ||--o{ CONNECTOR : authorizes
+  PROJECT ||--o{ TASK : contains
+  PROJECT }o--o{ SKILL : equips
+  TASK }o--|| AGENT_VARIANT : runs_with
+  TASK ||--o{ MESSAGE : records
+  TASK ||--o{ EXECUTION : launches
+  EXECUTION }o--o{ CONNECTOR : reads_or_writes
+  EXECUTION ||--o{ ARTIFACT : produces
+  TASK ||--o{ CONFIRMATION : waits_for
+  SCHEDULE ||--o{ EXECUTION : triggers
+%% 实体名为分析模板；关系中 USER-TASK、TASK-MESSAGE、CONNECTOR 授权、PROJECT-TASK 有官方/页面支持，其余按报告标签理解。</pre>
+  </section>
+
+  <section id="architecture"><div class="eyebrow">08 · Architecture</div><h2>端到端流转与产品分层</h2>
+    <div class="pipeline"><div class="step"><b>1. 目标进入</b><small>自然语言/语音/附件/模板</small></div><div class="step"><b>2. 任务配置</b><small>Agent、模式、项目、技能</small></div><div class="step"><b>3. 异步调度</b><small>排队 / Lite / 取消</small></div><div class="step"><b>4. 环境执行</b><small>沙箱、浏览器、文件、代码</small></div><div class="step"><b>5. 外部访问</b><small>连接器与权限确认</small></div><div class="step"><b>6. 等待/恢复</b><small>用户输入、确认、示例数据</small></div><div class="step"><b>7. 结果交付</b><small>消息、文件、应用、分享、计划</small></div></div>
+    <div class="layers">
+      <div class="layer"><strong>1 用户与渠道层</strong><div class="chips"><span class="chip solid">Web 工作台</span><span class="chip solid">Manus Desktop</span><span class="chip dash">Slack 等外部入口（官方）</span><span class="chip dash">API（官方）</span></div></div>
+      <div class="layer"><strong>2 交互工作台层</strong><div class="chips"><span class="chip solid">输入框</span><span class="chip solid">任务列表</span><span class="chip solid">步骤卡</span><span class="chip solid">项目/库/技能/插件/定时任务</span><span class="chip solid">分享与通知</span></div></div>
+      <div class="layer"><strong>3 产品应用层</strong><div class="chips"><span class="chip solid">网站</span><span class="chip solid">幻灯片</span><span class="chip solid">设计/图像</span><span class="chip solid">应用/游戏</span><span class="chip solid">视频/音频</span><span class="chip solid">研究/表格/可视化</span></div></div>
+      <div class="layer"><strong>4 Agent 与流程层</strong><div class="chips"><span class="chip solid">1.6 Max</span><span class="chip solid">1.6</span><span class="chip solid">1.6 Lite</span><span class="chip dash">异步状态机</span><span class="chip dash">能力选择/规划</span><span class="chip dotted">统一完成门</span></div></div>
+      <div class="layer"><strong>5 工具与服务层</strong><div class="chips"><span class="chip solid">附件/库/最近任务</span><span class="chip solid">Skills</span><span class="chip solid">Connectors</span><span class="chip solid">Projects</span><span class="chip solid">Schedules</span><span class="chip dash">浏览器/文件/代码执行</span></div></div>
+      <div class="layer"><strong>6 模型接入层</strong><div class="chips"><span class="chip solid">GPT Image 2（S49 可见）</span><span class="chip dash">Nano Banana Pro（官方能力，本样本未选）</span><span class="chip unknown">Agent 文本底模（未知）</span><span class="chip dash">视频/音频模型（未具名）</span><span class="chip dotted">模型能力注册表与路由评测</span></div></div>
+      <div class="layer"><strong>7 上下文与数据层</strong><div class="chips"><span class="chip solid">任务消息/状态</span><span class="chip solid">连接器状态</span><span class="chip dash">项目共享上下文</span><span class="chip dash">执行日志/文件</span><span class="chip dotted">依赖版本/结果校验</span></div></div>
+      <div class="layer"><strong>8 知识与公共资产层</strong><div class="chips"><span class="chip solid">模板/推荐任务</span><span class="chip solid">官方/个人 Skills</span><span class="chip dash">任务知识与项目文件</span><span class="chip dotted">安全/成本/能力知识版本化</span></div></div>
+      <div class="layer"><strong>9 基础设施与治理层</strong><div class="chips"><span class="chip solid">隔离 Sandbox（官方）</span><span class="chip solid">OAuth/API Key（官方）</span><span class="chip dash">任务队列</span><span class="chip dash">对象/结构化存储</span><span class="chip dotted">幂等、审计、链路追踪、成本冻结</span></div></div>
+    </div>
+    <p><span class="badge confirmed">实线/已确认</span> <span class="badge inferred">虚线/合理推断</span> <span class="badge recommended">点线/建议设计</span></p>
+    <h3>代表性时序：团队汇报助理</h3><pre aria-label="时序图 Mermaid 源码">sequenceDiagram
+  actor U as 用户
+  participant UI as Manus工作台
+  participant A as Manus 1.6
+  participant W as 任务/状态服务（推断）
+  participant C as Slack/Gmail连接器
+  participant X as 执行环境（官方Sandbox能力）
+  U->>UI: 提交汇报助理任务
+  UI->>W: 创建任务/写入排队状态
+  W-->>UI: 预计等待3分钟；可Lite/取消
+  W->>A: 调度任务
+  A->>C: 检查配置与启用状态
+  C-->>A: 已配置，但授权/启用不可用
+  A->>C: 请求启用并验证权限
+  C-->>A: 授权未确认
+  A->>W: 状态更新为等待用户
+  W-->>UI: 连接账户或使用示例数据
+  UI-->>U: “Manus将在您回复后继续”
+  alt 用户完成授权
+    U->>UI: 确认连接
+    A->>C: 读取频道和邮件
+    A->>X: 汇总与生成报告
+  else 用户选择示例数据
+    U->>UI: 使用示例数据
+    A->>X: 用模拟数据生成演示
+  else 用户中断
+    U->>UI: 取消/不回复
+    UI->>W: 取消或保持waiting（实际传播未知）
+  end</pre>
+  </section>
+
+  <section id="as-is"><div class="eyebrow">09 · As-Is / To-Be</div><h2>当前架构与建议架构</h2><div class="grid two"><div class="card"><h3>As-Is｜当前可见</h3><ul><li><b>目标式入口：</b>围绕“我能为你做什么”组织多种产物。</li><li><b>能力可组合：</b>Agent、模式、文件、技能、连接器、项目、计划。</li><li><b>异步可见：</b>排队时间、继续做其他任务、切换 Lite、取消。</li><li><b>人机接力：</b>外部权限缺失时进入等待，并提供示例数据旁路。</li><li><b>状态表述不统一：</b>配置、启用、授权在同一任务中出现冲突文案。</li></ul></div><div class="card"><h3>To-Be｜建议补充</h3><ul><li><b>连接能力状态机：</b>configured → enabled → authorized → reachable → readable/writable。</li><li><b>任务事实源：</b>聊天、步骤、侧栏状态、执行状态使用同一版本号。</li><li><b>完成门：</b>工具成功、资产存在、校验通过、状态写入、用户可访问同时满足。</li><li><b>成本与路由预估：</b>提交前展示等待、预计积分、外部 API 成本与结果差异。</li><li><b>模型透明度：</b>明确区分 Agent 档位、基础模型、专用生成模型和渲染路径，展示版本、成本、延迟、质量与任务适配。</li><li><b>安全确认矩阵：</b>读取、发送、发布、删除、支付分别设定强制确认。</li><li><b>幂等与取消传播：</b>重试不重复创建外部动作，取消能终止队列、沙箱和连接器调用。</li></ul></div></div>
+    <h3>底层能力选型表</h3><div class="table-wrap"><table><thead><tr><th>区域</th><th>需要能力</th><th>可能技术类别</th><th>推荐方案</th><th>为何不能确认当前实现</th></tr></thead><tbody>
+      <tr><td>工作台</td><td>任务流、实时进度、结果/文件、响应式</td><td>SPA/SSR + 流式事件</td><td>事件驱动 UI + 状态版本</td><td>截图不显示框架</td></tr>
+      <tr><td>Agent 编排</td><td>规划、能力选择、等待/恢复、子任务</td><td>状态机/DAG/事件编排</td><td>显式状态机 + 可审计决策摘要</td><td>内部编排不可见</td></tr>
+      <tr><td>异步任务</td><td>队列、优先级、取消、重试</td><td>任务队列 + worker</td><td>租户级公平调度、幂等键、取消令牌</td><td>只有排队行为可见</td></tr>
+      <tr><td>执行环境</td><td>隔离网络/文件/浏览器/代码</td><td>临时 VM/容器沙箱</td><td>每任务隔离、最小权限、生命周期策略</td><td>官方仅确认 Sandbox 能力，不披露具体厂商</td></tr>
+      <tr><td>模型路由</td><td>区分 Agent 档位、文本底模、图像模型、视频/音频模型与渲染路径</td><td>模型网关 + 能力注册表</td><td>记录 provider/model/version/capability/cost/latency/eval，并向用户解释路由取舍</td><td>Agent 底模未知；只确认 Agent 档位、GPT Image 2，以及官方可用的 Nano Banana Pro</td></tr>
+      <tr><td>连接器</td><td>OAuth、权限、数据读写、撤销</td><td>MCP/适配器层</td><td>细粒度 scope、授权状态机、动作确认</td><td>官方确认类别，不确认内部实现</td></tr>
+      <tr><td>数据与资产</td><td>任务、消息、文件、版本、项目继承</td><td>结构化 DB + 对象存储</td><td>版本化引用 + 依赖失效</td><td>数据库/存储厂商未知</td></tr>
+      <tr><td>可观测性</td><td>跨 Agent/工具/连接器追踪</td><td>日志、指标、分布式追踪</td><td>task/run/tool/asset/charge 统一 trace ID</td><td>页面只显示步骤摘要</td></tr>
+    </tbody></table></div>
+  </section>
+
+  <section id="risk"><div class="eyebrow">10 · Risks</div><h2>关键架构与体验风险</h2>
+    <div class="risk"><div class="rank">P0</div><div><b>连接器状态冲突</b><p class="lead">“配置文件中成功启用”之后又显示“仍未启用、授权未确认”。若状态模型没有拆层，可能造成越权预期或用户误判。证据：S56–S58。</p></div></div>
+    <div class="risk"><div class="rank">P0</div><div><b>敏感外部动作的确认边界</b><p class="lead">连接器可读写第三方系统；必须将读取与发送/发布/删除分开确认。官方 API 已显示多类 waiting confirmation，但本截图未覆盖。</p></div></div>
+    <div class="risk"><div class="rank">P1</div><div><b>排队切换造成结果不等价</b><p class="lead">用户可从 1.6 切到 Lite，但页面只说“无需等待”，没有解释能力、质量、工具可用性或上下文继承差异。</p></div></div>
+    <div class="risk"><div class="rank">P1</div><div><b>模型透明度不足</b><p class="lead">界面展示 Agent 档位与 GPT Image 2，但没有解释“Agent 版本≠底层模型”，也没有提供底模版本、上下文窗口、价格、延迟和路由理由；用户无法判断降档或换模型会牺牲什么。</p></div></div>
+    <div class="risk"><div class="rank">P1</div><div><b>取消传播与后台残留</b><p class="lead">“取消等待”入口可见，但不能确认是否同步取消队列、沙箱、外部 API 和计费。</p></div></div>
+    <div class="risk"><div class="rank">P1</div><div><b>自动重试引发重复外部动作或扣费</b><p class="lead">连接器启用与外部写操作必须具有幂等键；截图没有重试/扣费证据。</p></div></div>
+    <div class="risk"><div class="rank">P2</div><div><b>项目、技能与任务上下文污染</b><p class="lead">可复用上下文提高效率，也要求明确生产者、版本、作用域和租户隔离；本任务是否绑定项目未知。</p></div></div>
+    <div class="risk"><div class="rank">P2</div><div><b>“步骤已完成”不等于结果已验证</b><p class="lead">步骤摘要只能证明页面展示了判断/尝试；最终汇总、覆盖 10 个频道、三行格式和定时任务均未验证。</p></div></div>
+  </section>
+
+  <section id="trace"><div class="eyebrow">11 · Traceability</div><h2>组件—证据追溯</h2><div class="table-wrap"><table><thead><tr><th>组件</th><th>为何需要</th><th>证据</th><th>分类</th><th>置信度</th></tr></thead><tbody>
+    <tr><td>任务工作台</td><td>统一输入、任务和结果</td><td>S46–S58</td><td><span class="badge confirmed">已确认</span></td><td>高</td></tr>
+    <tr><td>Agent 档位</td><td>复杂度与服务等级选择</td><td>S45、S52</td><td><span class="badge confirmed">已确认</span></td><td>高</td></tr>
+    <tr><td>异步任务状态</td><td>排队、运行、等待、完成/错误</td><td>S55–S58；官方 Task Lifecycle</td><td><span class="badge confirmed">已确认</span></td><td>高</td></tr>
+    <tr><td>连接器层</td><td>访问 Slack/Gmail 等第三方数据</td><td>S51、S53、S56–S58；官方 Connectors</td><td><span class="badge confirmed">已确认</span></td><td>高</td></tr>
+    <tr><td>Skills</td><td>专业化与复用</td><td>S51；官方 Skills</td><td><span class="badge confirmed">已确认</span></td><td>高</td></tr>
+    <tr><td>Projects</td><td>共享指令与文件</td><td>S47；官方 Projects</td><td><span class="badge confirmed">已确认</span></td><td>高</td></tr>
+    <tr><td>Sandbox</td><td>执行浏览器、文件、代码</td><td>官方 Welcome / Sandbox</td><td><span class="badge confirmed">官方确认</span></td><td>高</td></tr>
+    <tr><td>模型网关</td><td>多模态模型和 Agent 档位选择</td><td>GPT Image 2 与多种模式；内部不可见</td><td><span class="badge inferred">合理推断</span></td><td>中</td></tr>
+    <tr><td>GPT Image 2</td><td>处理图像、文字与空间构图</td><td>S49；官方 GPT Image 2 集成说明</td><td><span class="badge confirmed">已确认</span></td><td>高</td></tr>
+    <tr><td>Nano Banana Pro</td><td>高视觉演示与定向编辑</td><td>官方 Slides / 集成资料；本截图未见选择</td><td><span class="badge confirmed">官方能力</span></td><td>中高</td></tr>
+    <tr><td>Agent 文本基础模型</td><td>驱动规划、判断和自然语言生成</td><td>产品行为需要，但厂商/版本未公开</td><td><span class="badge unknown">未知</span></td><td>低</td></tr>
+    <tr><td>任务队列</td><td>高峰排队与优先级</td><td>S45、S55</td><td><span class="badge inferred">行为推断</span></td><td>高</td></tr>
+    <tr><td>统一状态事实源</td><td>消除启用/授权冲突</td><td>S56–S58 的冲突</td><td><span class="badge recommended">建议设计</span></td><td>高</td></tr>
+    <tr><td>完成门/结果校验</td><td>避免仅凭 Agent 文案完成</td><td>本样本停在 waiting，无最终结果</td><td><span class="badge recommended">建议设计</span></td><td>高</td></tr>
+  </tbody></table></div>
+  <h3>官方来源</h3><ol class="source-list">
+    <li><a href="https://manus.im/docs/introduction/welcome">Manus Documentation — Welcome</a>：通用自治 Agent、虚拟计算环境、规划与执行定位。</li>
+    <li><a href="https://manus.im/docs/features/projects">Projects</a>：共享指令、知识文件与任务继承。</li>
+    <li><a href="https://manus.im/docs/features/skills">Manus Skills</a>：模块化、文件系统式、可复用能力。</li>
+    <li><a href="https://manus.im/docs/integrations/integrations">Integrations</a>：MCP、OAuth/API Key、权限与撤销。</li>
+    <li><a href="https://help.manus.im/en/articles/12231777-how-can-i-use-manus-connectors">Connectors Help</a>：连接步骤与典型集成。</li>
+    <li><a href="https://open.manus.im/docs/v2/task-lifecycle">Task Lifecycle</a>：running/stopped/waiting/error 与确认事件。</li>
+    <li><a href="https://manus.im/blog/manus-sandbox">Understanding Manus Sandbox</a>：隔离 VM、文件、浏览器、工具与生命周期。</li>
+    <li><a href="https://manus.im/blog/manus-schedules">Scheduled Tasks 2.0</a>：任务/项目/Web App 中的上下文与运行历史。</li>
+    <li><a href="https://help.manus.im/en/articles/11711097-what-are-the-rules-for-credits-consumption-and-how-can-i-obtain-them">Credits Help</a>：LLM、虚拟机、第三方 API 与失败退款规则。</li>
+    <li><a href="https://manus.im/blog/manus-recommended-connectors">Recommended Connectors</a>：启用需要用户确认，不绕过授权。</li>
+    <li><a href="https://open.manus.im/docs/v2/agents-overview">Manus API — Agents</a>：自定义 Agent 与子任务（仅作为官方能力，不等同本截图内部架构）。</li>
+    <li><a href="https://manus.im/blog/manus-max-release">Introducing Manus 1.6</a>：Max 的规划、复杂任务、工具可靠性、表格/分析与 Web 开发优势。</li>
+    <li><a href="https://manus.im/blog/manus-agents-telegram">Manus Agents on Telegram</a>：Max 深度与 Lite 速度/日常任务的官方定位。</li>
+    <li><a href="https://open.manus.im/docs/v1/create-task">Create a Task v1</a>：<code>manus-1.6</code>、<code>manus-1.6-lite</code>、<code>manus-1.6-max</code> 官方标识；v1 已标记为旧版，不能据此推断当前 UI 内部字段。</li>
+    <li><a href="https://manus.im/blog/manus-gpt-image-2">GPT Image 2 in Manus</a>：4K、文字渲染、空间推理与编辑能力。</li>
+    <li><a href="https://manus.im/blog/manus-slides-nano-banana-pro">Nano Banana Pro in Manus Slides</a>：演示文稿视觉、文字与艺术方向一致性。</li>
+    <li><a href="https://manus.im/blog/edit-slides-created-on-manus-with-nano-banana-pro">Edit Slides with Nano Banana Pro</a>：定向修改文字与视觉元素。</li>
+    <li><a href="https://manus.im/blog/Context-Engineering-for-AI-Agents-Lessons-from-Building-Manus">Context Engineering for AI Agents</a>：Manus 对模型无关架构与上下文工程的官方说明；文中模型示例不等于当前底模披露。</li>
+  </ol>
+  <h3>仍然无法确认</h3><div class="grid two"><div class="card"><ul><li>Manus 1.6/Max/Lite 分别调用哪家文本基础模型、精确版本、上下文窗口、推理预算与动态路由规则。</li><li>视频与音频入口实际调用的模型名称、版本和切换策略。</li><li>Agent 档位切换时上下文、工具权限与中间结果是否完整继承。</li><li>截图任务的最终结果、失败重试和真实计费。</li><li>“配置文件”具体位置、格式、生产者与一致性机制。</li></ul></div><div class="card"><ul><li>数据库、消息队列、云服务、模型网关厂商和具体语言。</li><li>取消任务是否终止所有下游调用并退款。</li><li>项目、技能、连接器之间的版本与权限继承。</li><li>外部数据缓存、保留期限、脱敏、审计和租户隔离实现。</li><li>Web 产品是否使用与 API 文档完全相同的状态字段。</li></ul></div></div>
+  </section>
+  <footer>Manus Product Evidence Report · 仅基于可见页面与 Manus 官方资料 · 不包含隐藏思维链、凭证或未经观察的实现</footer>
+</main>
+<script>
+  const root=document.documentElement; const theme=document.getElementById('theme');
+  theme.addEventListener('click',()=>{root.dataset.theme=root.dataset.theme==='dark'?'light':'dark';theme.setAttribute('aria-label',root.dataset.theme==='dark'?'切换到浅色主题':'切换到深色主题')});
+  const buttons=[...document.querySelectorAll('.filter')],rows=[...document.querySelectorAll('#field-table tbody tr')];
+  buttons.forEach(btn=>btn.addEventListener('click',()=>{buttons.forEach(b=>b.setAttribute('aria-pressed','false'));btn.setAttribute('aria-pressed','true');const f=btn.dataset.filter;rows.forEach(row=>row.hidden=f!=='all'&&row.dataset.class!==f)}));
+</script>
+</body></html>
